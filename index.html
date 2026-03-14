@@ -550,7 +550,7 @@
 
   @media (max-width: 600px) {
     .series-row { grid-template-columns: 28px 1fr 1fr 52px; gap: 6px; }
-    .validate-btn { min-width: 52px; font-size: 0; }
+    .validate-btn { width: 100%; padding: 0; font-size: 0; box-sizing: border-box; }
     .validate-btn::after { content: 'OK'; font-size: 10px; }
     .validate-btn.validated::after { content: '✓ OK'; }
     .session-date { font-size: 22px; }
