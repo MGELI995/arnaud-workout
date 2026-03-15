@@ -974,9 +974,23 @@ function updateProgress() {
 }
 
 // ==================== FINISH ====================
-function finishSession() {
+async function finishSession() {
+  const date = new Date().toISOString().split('T')[0];
   const note = generateObsidianNote();
   document.getElementById('exportContent').textContent = note;
+
+  try {
+    const res = await fetch('https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: note, date })
+    });
+    if (res.ok) showToast('✓ Séance sauvegardée dans Obsidian');
+    else throw new Error();
+  } catch {
+    showToast('⚠ Erreur envoi Obsidian');
+  }
+
   document.getElementById('exportModal').classList.add('active');
 }
 
