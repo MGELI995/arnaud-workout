@@ -549,9 +549,10 @@
   .toast.show { transform: translateY(0); opacity: 1; }
 
   @media (max-width: 600px) {
-    .series-row { grid-template-columns: 28px 1fr 1fr 52px; gap: 6px; }
-    .validate-btn { width: 100%; padding: 0; font-size: 0; box-sizing: border-box; }
-    .validate-btn::after { content: 'OK'; font-size: 10px; }
+    .series-row { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
+    .series-row .input-group { flex: 1; min-width: 0; }
+    .validate-btn { flex-shrink: 0; width: 48px; padding: 0; font-size: 11px; box-sizing: border-box; }
+    .validate-btn::after { content: 'OK'; }
     .validate-btn.validated::after { content: '✓ OK'; }
     .session-date { font-size: 22px; }
     .timer-display { font-size: 72px; }
