@@ -96,6 +96,31 @@ svg#dial { display: block; overflow: visible; }
 .validate-btn:active { background: var(--amber); color: var(--bg); }
 .validate-btn:disabled { border-color: #333; color: #333; cursor: default; }
 
+.confirm-row { display: none; gap: 8px; }
+.confirm-row.show { display: flex; }
+.cancel-btn {
+  height: 44px; padding: 0 14px;
+  border: 1px solid #444; background: transparent;
+  color: #666; font-family: var(--font); font-size: 11px;
+  font-weight: 700; letter-spacing: 0.1em; cursor: pointer;
+}
+.confirm-btn {
+  height: 44px; padding: 0 14px;
+  border: 1px solid var(--green); background: transparent;
+  color: var(--green); font-family: var(--font); font-size: 11px;
+  font-weight: 700; letter-spacing: 0.08em; cursor: pointer; max-width: 200px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.confirm-btn:active { background: var(--green); color: var(--bg); }
+
+.undo-btn {
+  display: none; height: 30px; padding: 0 12px;
+  border: none; background: transparent;
+  color: #444; font-family: var(--font); font-size: 10px;
+  letter-spacing: 0.08em; cursor: pointer; text-decoration: underline;
+}
+.undo-btn.show { display: block; }
+
 /* CATEGORIES */
 .cats-zone {
   flex-shrink: 0;
@@ -163,6 +188,7 @@ svg#dial { display: block; overflow: visible; }
 <header>
   <div class="h-name">TIME TRACKER</div>
   <div class="h-right">
+    <span id="totalDay" style="color:var(--amber);font-weight:700;font-size:10px;letter-spacing:0.1em"></span>
     <span class="dot"></span>
     <span id="clock">--:--</span>
   </div>
@@ -185,7 +211,12 @@ svg#dial { display: block; overflow: visible; }
   </div>
 
   <div class="validate-wrap">
-    <button class="validate-btn" id="validateBtn" onclick="logTime()" disabled>VALIDER</button>
+    <button class="validate-btn" id="validateBtn" onclick="prepareLog()" disabled>VALIDER</button>
+    <div class="confirm-row" id="confirmRow">
+      <button class="cancel-btn" onclick="cancelLog()">✕</button>
+      <button class="confirm-btn" id="confirmBtn" onclick="logTime()">CONFIRMER</button>
+    </div>
+    <button class="undo-btn" id="undoBtn" onclick="undoLast()">↩ annuler le dernier ajout</button>
   </div>
 </div>
 
@@ -205,6 +236,8 @@ let selectedMins = 30;
 let selectedCat = null;
 let todayLog = {};
 let sessions = {};
+let lastEntry = null;
+let pending = false;
 
 function getDate() { return new Date().toISOString().split('T')[0]; }
 
@@ -313,14 +346,54 @@ function selectCat(cat) {
   renderCats();
 }
 
-// LOG TIME
+function updateTotal() {
+  const total = Object.values(todayLog).reduce((a, b) => a + b, 0);
+  document.getElementById('totalDay').textContent = total > 0 ? `TOTAL ${fmtMins(total)}` : '';
+}
+
+function prepareLog() {
+  if (!selectedCat || !selectedMins) return;
+  pending = true;
+  document.getElementById('validateBtn').style.display = 'none';
+  document.getElementById('confirmBtn').textContent = `+${selectedMins}min · ${selectedCat}`;
+  document.getElementById('confirmRow').classList.add('show');
+  document.getElementById('undoBtn').classList.remove('show');
+}
+
+function cancelLog() {
+  pending = false;
+  document.getElementById('validateBtn').style.display = '';
+  document.getElementById('confirmRow').classList.remove('show');
+  if (lastEntry) document.getElementById('undoBtn').classList.add('show');
+}
+
 function logTime() {
   if (!selectedCat || !selectedMins) return;
+  lastEntry = { cat: selectedCat, mins: selectedMins };
   todayLog[selectedCat] = (todayLog[selectedCat] || 0) + selectedMins;
   sessions[selectedCat] = (sessions[selectedCat] || 0) + 1;
   saveToday();
   pushToObsidian();
-  showToast(`✓ +${selectedMins}mn ${selectedCat}`);
+  showToast(`✓ +${selectedMins}min ${selectedCat}`);
+  pending = false;
+  document.getElementById('validateBtn').style.display = '';
+  document.getElementById('confirmRow').classList.remove('show');
+  document.getElementById('undoBtn').classList.add('show');
+  updateTotal();
+  renderCats();
+}
+
+function undoLast() {
+  if (!lastEntry) return;
+  todayLog[lastEntry.cat] = Math.max(0, (todayLog[lastEntry.cat] || 0) - lastEntry.mins);
+  if (todayLog[lastEntry.cat] === 0) delete todayLog[lastEntry.cat];
+  sessions[lastEntry.cat] = Math.max(0, (sessions[lastEntry.cat] || 1) - 1);
+  saveToday();
+  pushToObsidian();
+  showToast(`↩ -${lastEntry.mins}min ${lastEntry.cat} annulé`);
+  lastEntry = null;
+  document.getElementById('undoBtn').classList.remove('show');
+  updateTotal();
   renderCats();
 }
 
@@ -354,6 +427,7 @@ loadToday();
 drawTicks();
 updateDial(selectedMins);
 renderCats();
+updateTotal();
 updateClock();
 setInterval(updateClock, 10000);
 </script>
