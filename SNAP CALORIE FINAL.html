@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SNAP_CAL">
+<meta name="theme-color" content="#000000">
+<title>SNAP_CALORIE_VISION</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --amber: #FFB800; --bg: #000; --bg2: #080808; --border: #1a1a1a;
+  --white: #fff; --green: #00CC55; --red: #FF3333; --gray: #444; --dim: #333;
+  --font: 'IBM Plex Mono', monospace;
+}
+body { background:var(--bg); color:var(--white); font-family:var(--font); min-height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; }
+header { display:flex; justify-content:space-between; align-items:center; padding:10px 20px; border-bottom:1px solid var(--amber); flex-shrink:0; position:sticky; top:0; background:var(--bg); z-index:100; }
+.h-name { font-size:10px; font-weight:700; color:var(--amber); letter-spacing:0.15em; }
+.h-right { font-size:10px; color:#555; display:flex; align-items:center; gap:8px; }
+.dot { width:5px; height:5px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+#clock { color:var(--amber); }
+.main { flex:1; padding:16px; max-width:480px; margin:0 auto; width:100%; }
+.section-label { font-size:9px; color:var(--amber); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:10px; margin-top:20px; display:flex; align-items:center; gap:8px; }
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.section-label:first-child { margin-top:0; }
+.capture-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.capture-btn { position:relative; border:1px solid var(--dim); background:var(--bg2); padding:0; cursor:pointer; overflow:hidden; aspect-ratio:4/3; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; transition:border-color 0.15s; }
+.capture-btn.required { border-color:var(--amber); }
+.capture-btn.captured { border-color:var(--green); background:#001a0a; }
+.capture-btn:active { opacity:0.7; }
+.capture-btn input[type="file"] { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; z-index:2; }
+.capture-preview { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition:opacity 0.3s; }
+.capture-preview.visible { opacity:1; }
+.capture-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; z-index:1; }
+.capture-icon { font-size:22px; }
+.capture-label { font-family:var(--font); font-size:9px; font-weight:700; letter-spacing:0.1em; color:var(--white); text-align:center; line-height:1.4; }
+.capture-tag { font-size:8px; padding:2px 6px; border:1px solid; letter-spacing:0.1em; }
+.capture-btn.required .capture-tag { border-color:var(--amber); color:var(--amber); }
+.capture-btn.captured .capture-tag { border-color:var(--green); color:var(--green); }
+.capture-btn:not(.required):not(.captured) .capture-tag { border-color:#333; color:#555; }
+.comment-wrap { margin-bottom:8px; }
+.comment-field { width:100%; background:var(--bg2); border:1px solid var(--amber); color:var(--white); font-family:var(--font); font-size:12px; padding:12px 14px; resize:none; outline:none; letter-spacing:0.04em; line-height:1.5; min-height:80px; }
+.comment-field::placeholder { color:#333; font-style:italic; }
+.comment-hint { font-size:8px; color:var(--amber); margin-top:5px; letter-spacing:0.08em; opacity:0.7; }
+.analyze-btn { width:100%; height:48px; border:1px solid var(--amber); background:transparent; color:var(--amber); font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:0.15em; cursor:pointer; transition:all 0.15s; margin-bottom:20px; display:flex; align-items:center; justify-content:center; gap:10px; }
+.analyze-btn:active { background:var(--amber); color:var(--bg); }
+.analyze-btn:disabled { border-color:#333; color:#333; cursor:not-allowed; }
+.analyze-btn .spinner { width:12px; height:12px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+.analyze-btn.loading .spinner { display:block; }
+.analyze-btn.loading .btn-text { opacity:0.5; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.result-card { border:1px solid var(--green); background:#001a0a; padding:16px; margin-bottom:8px; display:none; animation:fadeIn 0.4s ease; }
+.result-card.visible { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.result-label { font-size:11px; font-weight:700; color:var(--green); letter-spacing:0.1em; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.result-label::before { content:'▶'; font-size:8px; }
+.macro-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
+.macro-cell { background:#000; border:1px solid #0d2e15; padding:10px 8px; text-align:center; }
+.macro-val { font-size:18px; font-weight:700; color:var(--white); line-height:1; }
+.macro-val.cal { color:var(--amber); font-size:22px; }
+.macro-unit { font-size:8px; color:#555; margin-top:2px; }
+.macro-name { font-size:8px; color:var(--green); letter-spacing:0.1em; margin-top:4px; }
+.result-analysis { font-size:9px; color:#777; line-height:1.6; letter-spacing:0.04em; padding-top:10px; border-top:1px solid #0d2e15; }
+.push-btn { width:100%; height:48px; border:1px solid var(--green); background:transparent; color:var(--green); font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:0.15em; cursor:pointer; transition:all 0.15s; margin-bottom:20px; display:none; }
+.push-btn.visible { display:block; }
+.push-btn:active { background:var(--green); color:var(--bg); }
+.push-btn.saved { background:#001a0a; }
+.push-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.log-list { display:flex; flex-direction:column; gap:4px; margin-bottom:20px; }
+.log-entry { padding:10px 12px; border:1px solid var(--border); background:var(--bg2); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.log-name { font-size:10px; font-weight:600; color:var(--white); flex:1; letter-spacing:0.04em; }
+.log-cal { font-size:12px; font-weight:700; color:var(--amber); white-space:nowrap; }
+.log-macros { font-size:8px; color:#555; margin-top:2px; letter-spacing:0.04em; }
+.log-empty { font-size:10px; color:#333; padding:16px 0; text-align:center; letter-spacing:0.1em; }
+.total-bar { border:1px solid var(--amber); background:#1a1000; padding:14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.total-label { font-size:10px; color:var(--amber); letter-spacing:0.12em; }
+.total-val { font-size:24px; font-weight:700; color:var(--amber); }
+.toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%) translateY(80px); background:#001a0a; border:1px solid var(--green); padding:10px 20px; font-size:10px; color:var(--green); letter-spacing:0.05em; z-index:999; transition:transform 0.3s; white-space:nowrap; pointer-events:none; }
+.toast.error { background:#1a0000; border-color:var(--red); color:var(--red); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.error-msg { font-size:9px; color:var(--red); padding:10px 12px; border:1px solid #330000; background:#0a0000; margin-bottom:8px; letter-spacing:0.04em; display:none; }
+.error-msg.visible { display:block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-name">SNAP_CALORIE</div>
+  <div class="h-right"><span class="dot"></span><span id="clock">--:--</span></div>
+</header>
+
+<div class="main">
+
+  <div class="section-label">CAPTURE</div>
+  <div class="capture-grid">
+    <div class="capture-btn" id="btnMenu">
+      <input type="file" accept="image/*" capture="environment" onchange="handleCapture('menu', this)">
+      <div class="capture-preview" id="previewMenu"></div>
+      <div class="capture-overlay">
+        <div class="capture-icon">📋</div>
+        <div class="capture-label">SCANNER<br>MENU</div>
+        <div class="capture-tag">OPTIONNEL</div>
+      </div>
+    </div>
+    <div class="capture-btn required" id="btnPlat">
+      <input type="file" accept="image/*" capture="environment" onchange="handleCapture('plat', this)">
+      <div class="capture-preview" id="previewPlat"></div>
+      <div class="capture-overlay">
+        <div class="capture-icon">🍽️</div>
+        <div class="capture-label">SCANNER<br>PLAT</div>
+        <div class="capture-tag">OBLIGATOIRE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">COMMENTAIRES MANUELS</div>
+  <div class="comment-wrap">
+    <textarea class="comment-field" id="comments" rows="3"
+      placeholder="Ex: viande de bœuf, sauce très huileuse, portion double selon mon épouse..."></textarea>
+    <div class="comment-hint">► CES INFORMATIONS PRIMENT SUR L'ANALYSE VISUELLE</div>
+  </div>
+
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
+    <div class="spinner"></div>
+    <span class="btn-text">⚡ ANALYSER AVEC GEMINI</span>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-label" id="resultLabel">ANALYSE</div>
+    <div class="macro-grid">
+      <div class="macro-cell"><div class="macro-val cal" id="rCal">—</div><div class="macro-unit">kcal</div><div class="macro-name">CALORIES</div></div>
+      <div class="macro-cell"><div class="macro-val" id="rProt">—</div><div class="macro-unit">g</div><div class="macro-name">PROTÉINES</div></div>
+      <div class="macro-cell"><div class="macro-val" id="rFat">—</div><div class="macro-unit">g</div><div class="macro-name">LIPIDES</div></div>
+      <div class="macro-cell"><div class="macro-val" id="rCarb">—</div><div class="macro-unit">g</div><div class="macro-name">GLUCIDES</div></div>
+    </div>
+    <div class="result-analysis" id="rAnalysis"></div>
+  </div>
+
+  <button class="push-btn" id="pushBtn" onclick="pushToObsidian()">✓ VALIDER ET PUSH OBSIDIAN</button>
+
+  <div class="section-label">LOG DU JOUR</div>
+  <div class="log-list" id="logList"></div>
+  <div class="total-bar">
+    <div class="total-label">TOTAL OUTDOOR</div>
+    <div class="total-val"><span id="totalCal">0</span> kcal</div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Clé Gemini stockée dans le Worker — aucune clé ici ──
+const WORKER_URL = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
+
+let images = { menu: null, plat: null };
+let lastResult = null;
+
+function getDate() { return new Date().toISOString().split('T')[0]; }
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
+
+async function compressImage(file, maxW=1024, quality=0.75) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w=img.width, h=img.height;
+      if (w>maxW) { h=Math.round(h*maxW/w); w=maxW; }
+      const c=document.createElement('canvas');
+      c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      c.toBlob(blob=>{
+        const r=new FileReader();
+        r.onload=e=>resolve(e.target.result.split(',')[1]);
+        r.readAsDataURL(blob);
+      },'image/jpeg',quality);
+    };
+    img.src=url;
+  });
+}
+
+async function handleCapture(type, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const b64 = await compressImage(file);
+  images[type] = b64;
+  const key = type.charAt(0).toUpperCase() + type.slice(1);
+  const preview = document.getElementById(`preview${key}`);
+  preview.style.backgroundImage = `url(data:image/jpeg;base64,${b64})`;
+  preview.classList.add('visible');
+  const btn = document.getElementById(`btn${key}`);
+  btn.classList.add('captured');
+  btn.classList.remove('required');
+  btn.querySelector('.capture-tag').textContent = '✓ CAPTURÉ';
+}
+
+async function analyzeImage() {
+  if (!images.plat) { showToast('⚠ Photo du plat obligatoire', true); return; }
+  const comments = document.getElementById('comments').value.trim();
+  const btn = document.getElementById('analyzeBtn');
+  const errorEl = document.getElementById('errorMsg');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.querySelector('.btn-text').textContent = 'ANALYSE EN COURS...';
+  errorEl.classList.remove('visible');
+
+  const systemPrompt = `Tu es un expert en nutrition. Analyse la photo du plat (obligatoire) et celle du menu (si fournie).
+PRIORITÉ HAUTE : Utilise les commentaires textuels de l'utilisateur pour affiner ton calcul.
+Commentaires utilisateur : "${comments || 'Aucun commentaire'}"
+S'il précise un ingrédient ou une estimation tierce, intègre-le comme vérité absolue.
+CRITIQUE : Ne sous-estime jamais les graisses. Les repas au restaurant contiennent souvent 2x plus de matières grasses qu'on ne l'imagine.
+SORTIE : JSON uniquement, sans markdown, sans backticks, sans texte avant ou après.
+Format exact — JSON pur, AUCUN texte avant ou après, AUCUN markdown : {"label":"Nom court","calories":650,"protein":35,"fat":28,"carbs":60,"analysis":"max 10 mots"}`;
+
+  const parts = [];
+  if (images.menu) {
+    parts.push({ inline_data: { mime_type: 'image/jpeg', data: images.menu } });
+    parts.push({ text: 'Voici la photo du menu.' });
+  }
+  parts.push({ inline_data: { mime_type: 'image/jpeg', data: images.plat } });
+  parts.push({ text: systemPrompt });
+
+  try {
+    const res = await fetch(`${WORKER_URL}analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parts })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+    // Worker returns { raw: "..." } — parse robustly
+    if (data.error) throw new Error(data.error);
+    console.log('FULL DATA:', JSON.stringify(data));
+    const raw = typeof data === 'string' ? data : (data.raw || JSON.stringify(data));
+    console.log('RAW FROM GEMINI:', raw);
+
+    // Extract numbers from raw text regardless of format
+    // Parse — always extract numbers directly via regex, no JSON.parse needed
+    // raw is an escaped JSON string — find numbers with regex on escaped form
+    const num = (k) => {
+      const m = raw.match(new RegExp('\\"' + k + '\\":(\\d+)'));
+      return m ? parseInt(m[1]) : 0;
+    };
+    const getLabel = () => {
+      const m = raw.match(/\\"label\\":\\"([^\\]+)\\"/);
+      return m ? m[1] : 'Repas';
+    };
+    const parsed = {
+      label:    getLabel(),
+      calories: num('calories'),
+      protein:  num('protein'),
+      fat:      num('fat'),
+      carbs:    num('carbs'),
+      analysis: ''
+    };
+    lastResult = parsed;
+    console.log('PARSED:', JSON.stringify(parsed));
+    console.log('CALLING displayResult...');
+    try {
+      displayResult(parsed);
+      console.log('displayResult OK');
+    } catch(displayErr) {
+      console.error('displayResult ERROR:', displayErr);
+    }
+    showToast('✓ Analyse terminée');
+  } catch (err) {
+    errorEl.textContent = `⚠ ERREUR : ${err.message}`;
+    errorEl.classList.add('visible');
+    showToast('⚠ Erreur d\'analyse', true);
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  btn.querySelector('.btn-text').textContent = '⚡ ANALYSER AVEC GEMINI';
+}
+
+function displayResult(r) {
+  document.getElementById('resultLabel').textContent = (r.label || 'REPAS').toUpperCase();
+  document.getElementById('rCal').textContent = r.calories;
+  document.getElementById('rProt').textContent = r.protein;
+  document.getElementById('rFat').textContent = r.fat;
+  document.getElementById('rCarb').textContent = r.carbs;
+  document.getElementById('rAnalysis').textContent = r.analysis;
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('pushBtn').classList.add('visible');
+}
+
+async function pushToObsidian() {
+  if (!lastResult) return;
+  const btn = document.getElementById('pushBtn');
+  btn.disabled = true;
+  const date = getDate();
+  const comments = document.getElementById('comments').value.trim();
+  const { label, calories, protein, fat, carbs } = lastResult;
+  const line = `[[${date}]] | ${label} | CAL: ${calories} | P: ${protein} | L: ${fat} | G: ${carbs} | Note: ${comments || '-'}`;
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: line+'\n', date, filename: 'CONTROL/OUTDOOR_LOG.md', section: 'OUTDOOR', append: true })
+    });
+    if (res.ok) {
+      btn.textContent = '✓ SAUVEGARDÉ';
+      btn.classList.add('saved');
+      saveToLocalLog(lastResult, comments);
+      showToast(`✓ ${label} — ${calories} kcal pushé`);
+      renderLog();
+      setTimeout(() => {
+        btn.textContent = '✓ VALIDER ET PUSH OBSIDIAN';
+        btn.classList.remove('saved');
+        btn.disabled = false;
+      }, 3000);
+    } else throw new Error('Worker KO');
+  } catch(e) {
+    showToast('⚠ Connexion impossible', true);
+    btn.disabled = false;
+  }
+}
+
+function getLogKey() { return `outdoor_log_${getDate()}`; }
+function saveToLocalLog(result, comments) {
+  const log = getLocalLog();
+  log.push({ ...result, comments, time: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) });
+  localStorage.setItem(getLogKey(), JSON.stringify(log));
+}
+function getLocalLog() {
+  const d = localStorage.getItem(getLogKey());
+  return d ? JSON.parse(d) : [];
+}
+function renderLog() {
+  const log = getLocalLog();
+  const list = document.getElementById('logList');
+  if (!log.length) {
+    list.innerHTML = '<div class="log-empty">— AUCUNE ENTRÉE AUJOURD\'HUI —</div>';
+    document.getElementById('totalCal').textContent = '0';
+    return;
+  }
+  list.innerHTML = log.map(e=>`
+    <div class="log-entry">
+      <div>
+        <div class="log-name">${e.label.toUpperCase()}</div>
+        <div class="log-macros">P:${e.protein}g · L:${e.fat}g · G:${e.carbs}g · ${e.time}</div>
+      </div>
+      <div class="log-cal">${e.calories} kcal</div>
+    </div>`).join('');
+  document.getElementById('totalCal').textContent = log.reduce((s,e)=>s+(e.calories||0),0);
+}
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast'+(isError?' error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+updateClock();
+renderLog();
+setInterval(updateClock, 10000);
+</script>
+</body>
+</html>
