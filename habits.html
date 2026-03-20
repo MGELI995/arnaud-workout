@@ -60,8 +60,8 @@ header { display:flex; justify-content:space-between; align-items:center; paddin
 .section-label { font-size:9px; color:var(--amber); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
 .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
-/* HABIT ROW (classique) */
-.habits-list { display:flex; flex-direction:column; gap:6px; margin-bottom:24px; }
+/* HABIT ROW */
+.habits-list { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
 .habit-row { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--border); background:var(--bg2); cursor:pointer; transition:all 0.15s; }
 .habit-row:active { opacity:0.7; }
 .habit-row.checked { border-color:var(--amber); background:#0a0800; }
@@ -71,6 +71,26 @@ header { display:flex; justify-content:space-between; align-items:center; paddin
 .habit-name { font-size:12px; font-weight:600; color:var(--white); letter-spacing:0.06em; }
 .habit-desc { font-size:9px; color:#555; margin-top:2px; letter-spacing:0.05em; }
 .habit-row.checked .habit-name { color:var(--amber); }
+
+/* COMMENTAIRE DU JOUR */
+.comment-wrap { margin-bottom:24px; }
+.day-comment {
+  width:100%;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  color:var(--white);
+  font-family:var(--font);
+  font-size:11px;
+  padding:12px 14px;
+  resize:none;
+  min-height:70px;
+  outline:none;
+  letter-spacing:0.04em;
+  line-height:1.7;
+  transition:border-color 0.2s;
+}
+.day-comment:focus { border-color:var(--amber-border); }
+.day-comment::placeholder { color:#2a2a2a; font-style:italic; }
 
 /* DEEN HEADER */
 .deen-header-block { background:var(--amber-dim); border:1px solid var(--amber-border); border-left:2px solid var(--amber); padding:10px 14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
@@ -98,6 +118,65 @@ header { display:flex; justify-content:space-between; align-items:center; paddin
 .session-dots { display:flex; gap:3px; }
 .session-dot { width:5px; height:5px; border:1px solid #333; transition:all 0.2s; }
 .session-dot.filled { background:var(--amber); border-color:var(--amber); }
+
+/* ═══════════════════════════════════════
+   RAWATIB — MENU DÉROULANT
+═══════════════════════════════════════ */
+.rawatib-section { margin-bottom:16px; }
+
+.rawatib-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 14px;
+  border:1px solid var(--amber-border);
+  background:var(--amber-dim);
+  border-left:2px solid var(--amber);
+  cursor:pointer;
+  transition:all 0.15s;
+  user-select:none;
+}
+.rawatib-header:active { opacity:0.75; }
+.rawatib-header-left { display:flex; align-items:center; gap:8px; }
+.rawatib-chevron { font-size:8px; color:var(--amber); transition:transform 0.2s; display:inline-block; }
+.rawatib-chevron.open { transform:rotate(90deg); }
+.rawatib-title { font-size:9px; font-weight:700; letter-spacing:0.15em; color:var(--amber); }
+.rawatib-xp-total { font-size:11px; font-weight:700; color:var(--amber); }
+
+.rawatib-body {
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  margin-top:4px;
+}
+.rawatib-body.open { display:flex; }
+
+.rawatib-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 14px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  cursor:pointer;
+  transition:all 0.15s;
+  border-left:2px solid transparent;
+}
+.rawatib-row:active { opacity:0.7; }
+.rawatib-row.done { border-color:rgba(255,184,0,0.4); border-left-color:var(--amber); background:#0a0800; }
+.rawatib-check {
+  width:20px; height:20px;
+  border:1px solid var(--gray);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-size:11px; font-weight:700;
+  transition:all 0.15s;
+}
+.rawatib-row.done .rawatib-check { border-color:var(--amber); background:var(--amber); color:#000; }
+.rawatib-info { flex:1; min-width:0; }
+.rawatib-name { font-size:11px; font-weight:600; color:var(--white); letter-spacing:0.06em; }
+.rawatib-row.done .rawatib-name { color:var(--amber); }
+.rawatib-desc { font-size:9px; color:#555; margin-top:2px; letter-spacing:0.04em; }
+.rawatib-xp-badge { font-size:10px; font-weight:700; color:var(--amber); opacity:0.65; flex-shrink:0; white-space:nowrap; }
 
 /* DEEN TOTAL */
 .deen-total-row { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; border:1px solid var(--amber-border); background:var(--amber-dim); margin-bottom:24px; }
@@ -196,6 +275,17 @@ header { display:flex; justify-content:space-between; align-items:center; paddin
   <div class="section-label">RITUELS QUOTIDIENS</div>
   <div class="habits-list" id="habitsList"></div>
 
+  <!-- COMMENTAIRE DU JOUR -->
+  <div class="comment-wrap">
+    <div class="section-label">NOTE DU JOUR</div>
+    <textarea
+      class="day-comment"
+      id="dayComment"
+      placeholder="Aujourd'hui c'est l'Aïd…"
+      oninput="saveComment()"
+    ></textarea>
+  </div>
+
   <div class="deen-header-block">
     <span class="deen-header-title">&#9670; DEEN MODULE &mdash; IB&#256;D&#256;T</span>
     <span class="deen-xp-display" id="deenXpHeader">0 XP</span>
@@ -206,6 +296,18 @@ header { display:flex; justify-content:space-between; align-items:center; paddin
 
   <div class="section-label">ACTES &amp; AUM&#212;NE</div>
   <div class="deen-list" id="deenList2"></div>
+
+  <!-- RAWATIB — MENU DÉROULANT -->
+  <div class="rawatib-section">
+    <div class="rawatib-header" onclick="toggleRawatibSection()">
+      <div class="rawatib-header-left">
+        <span class="rawatib-chevron" id="rawatibChevron">&#9658;</span>
+        <span class="rawatib-title">PR&#200;RES SUR&#201;ROGATOIRES &mdash; RAW&#256;TIB</span>
+      </div>
+      <span class="rawatib-xp-total" id="rawatibXpBadge">0 XP</span>
+    </div>
+    <div class="rawatib-body" id="rawatibBody"></div>
+  </div>
 
   <div class="deen-total-row">
     <span class="deen-total-label">TOTAL DEEN XP &mdash; SESSION</span>
@@ -282,6 +384,17 @@ const DEEN = [
   { id:'sadaqa',         name:'ṢADAQA DU JOUR',         desc:'Aumône · même symbolique · protège des épreuves', max:1, labels:['FAIT'],                                             xp:60,  group:2, key:'sadaqa' },
   { id:'tahajjud',       name:'TAHAJJUD',                desc:'Prière de nuit — dernier tiers de la nuit',       max:1, labels:['FAIT'],                                             xp:150, group:2, key:'tahajjud' },
   { id:'tawbah',         name:'TAWBAH — REPENTIR',       desc:'Istighfār sincère du jour · 3 minutes minimum',   max:1, labels:['FAIT'],                                             xp:50,  group:2, key:'tawbah' },
+];
+
+/* ─── RAWATIB ─── */
+// XP calibrés vs le reste : sunnah mu'akkada, moins que tahajjud (150 XP) mais significatives
+// Total max rawatib : 140 XP
+const RAWATIB = [
+  { id:'raw_fajr',      name:'SUNNAH AL-FAJR',          desc:'2 rak\'ahs avant Fajr — jamais abandonnées par le Prophète ﷺ',  xp:45 },
+  { id:'raw_dhuhr_qab', name:'SUNNAH DHUHR QABLIYYA',   desc:'4 rak\'ahs avant Dhuhr',                                         xp:30 },
+  { id:'raw_dhuhr_bad', name:'SUNNAH DHUHR BAʿDIYYA',   desc:'2 rak\'ahs après Dhuhr',                                         xp:20 },
+  { id:'raw_maghrib',   name:'SUNNAH MAGHRIB',           desc:'2 rak\'ahs après Maghrib',                                       xp:25 },
+  { id:'raw_isha',      name:'SUNNAH ʿISHĀʾ',           desc:'2 rak\'ahs après ʿIshāʾ',                                       xp:20 },
 ];
 
 /* ─── CAROUSEL DATA ─── */
@@ -444,8 +557,10 @@ const CARDS = {
 };
 
 /* ─── STATE ─── */
-let habitsState = {};
-let deenState   = {}; // { id: nbSessions }
+let habitsState  = {};
+let deenState    = {}; // { id: nbSessions }
+let rawatibState = {}; // { id: boolean }
+let dayComment   = '';
 
 function getDate() { return new Date().toISOString().split('T')[0]; }
 
@@ -453,15 +568,22 @@ function load() {
   const raw = localStorage.getItem('habits_' + getDate());
   if (raw) {
     try {
-      const s = JSON.parse(raw);
-      habitsState = s.habits || {};
-      deenState   = s.deen   || {};
+      const s      = JSON.parse(raw);
+      habitsState  = s.habits   || {};
+      deenState    = s.deen     || {};
+      rawatibState = s.rawatib  || {};
+      dayComment   = s.comment  || '';
     } catch(e) {}
   }
 }
 
 function persist() {
-  localStorage.setItem('habits_' + getDate(), JSON.stringify({ habits: habitsState, deen: deenState }));
+  localStorage.setItem('habits_' + getDate(), JSON.stringify({
+    habits:  habitsState,
+    deen:    deenState,
+    rawatib: rawatibState,
+    comment: dayComment,
+  }));
 }
 
 /* ─── HABITS ─── */
@@ -492,9 +614,17 @@ function updateScore() {
   document.getElementById('progressFill').style.width = score + '%';
 }
 
+/* ─── COMMENTAIRE ─── */
+function saveComment() {
+  dayComment = document.getElementById('dayComment').value;
+  persist();
+}
+
 /* ─── DEEN ─── */
 function deenXpTotal() {
-  return DEEN.reduce((s, item) => s + (deenState[item.id] || 0) * item.xp, 0);
+  const fromDeen    = DEEN.reduce((s, item) => s + (deenState[item.id] || 0) * item.xp, 0);
+  const fromRawatib = RAWATIB.reduce((s, r) => s + (rawatibState[r.id] ? r.xp : 0), 0);
+  return fromDeen + fromRawatib;
 }
 
 function renderDeen() {
@@ -517,9 +647,7 @@ function renderDeen() {
         ).join('') + '</div>';
     }
 
-    const xpLabel = item.max > 1
-      ? `+${item.xp} XP ×${item.max}`
-      : `+${item.xp} XP`;
+    const xpLabel = item.max > 1 ? `+${item.xp} XP ×${item.max}` : `+${item.xp} XP`;
 
     const html = `
       <div class="deen-row ${stateClass}" onclick="deenClick('${item.id}')">
@@ -539,26 +667,66 @@ function renderDeen() {
   });
 
   const xp = deenXpTotal();
-  document.getElementById('deenXpHeader').textContent  = xp + ' XP';
-  document.getElementById('deenTotalVal').textContent  = xp + ' / 500 XP';
-  document.getElementById('xpDisplay').textContent     = xp + ' / 500';
-  document.getElementById('xpFill').style.width        = Math.min(xp / 5, 100) + '%';
+  document.getElementById('deenXpHeader').textContent = xp + ' XP';
+  document.getElementById('deenTotalVal').textContent = xp + ' / 500 XP';
+  document.getElementById('xpDisplay').textContent    = xp + ' / 500';
+  document.getElementById('xpFill').style.width       = Math.min(xp / 5, 100) + '%';
   updateMuslimDay(xp);
+}
+
+/* ─── RAWATIB ─── */
+let rawatibOpen = false;
+
+function toggleRawatibSection() {
+  rawatibOpen = !rawatibOpen;
+  document.getElementById('rawatibBody').classList.toggle('open', rawatibOpen);
+  document.getElementById('rawatibChevron').classList.toggle('open', rawatibOpen);
+}
+
+function toggleRawatib(id) {
+  rawatibState[id] = !rawatibState[id];
+  persist();
+  renderRawatib();
+  // Mettre à jour les totaux XP
+  const xp = deenXpTotal();
+  document.getElementById('deenXpHeader').textContent = xp + ' XP';
+  document.getElementById('deenTotalVal').textContent = xp + ' / 500 XP';
+  document.getElementById('xpDisplay').textContent    = xp + ' / 500';
+  document.getElementById('xpFill').style.width       = Math.min(xp / 5, 100) + '%';
+  updateMuslimDay(xp);
+  showToast((rawatibState[id] ? '✓ ' : '○ ') + RAWATIB.find(r => r.id === id).name);
+}
+
+function renderRawatib() {
+  const body  = document.getElementById('rawatibBody');
+  const total = RAWATIB.reduce((s, r) => s + (rawatibState[r.id] ? r.xp : 0), 0);
+
+  body.innerHTML = RAWATIB.map(r => `
+    <div class="rawatib-row ${rawatibState[r.id] ? 'done' : ''}" onclick="toggleRawatib('${r.id}')">
+      <div class="rawatib-check">${rawatibState[r.id] ? '✓' : ''}</div>
+      <div class="rawatib-info">
+        <div class="rawatib-name">${r.name}</div>
+        <div class="rawatib-desc">${r.desc}</div>
+      </div>
+      <div class="rawatib-xp-badge">+${r.xp} XP</div>
+    </div>`).join('');
+
+  document.getElementById('rawatibXpBadge').textContent = total > 0 ? '+' + total + ' XP' : '0 XP';
 }
 
 /* ─── MUSLIM DAY ─── */
 function updateMuslimDay(xp) {
-  const row   = document.getElementById('muslimDayRow');
-  const check = document.getElementById('muslimDayCheck');
-  const name  = document.getElementById('muslimDayName');
-  const desc  = document.getElementById('muslimDayDesc');
-  const xpEl  = document.getElementById('muslimDayXp');
+  const row      = document.getElementById('muslimDayRow');
+  const check    = document.getElementById('muslimDayCheck');
+  const desc     = document.getElementById('muslimDayDesc');
+  const xpEl     = document.getElementById('muslimDayXp');
   const unlocked = xp >= 500;
   row.classList.toggle('unlocked', unlocked);
-  check.textContent   = unlocked ? '✓' : '';
-  name.textContent    = 'MUSLIM DAY';
-  desc.textContent    = unlocked ? 'Objectif atteint \u2014 ' + xp + ' XP DEEN' : 'Atteins 500 XP pour d\u00e9verrouiller \u2014 ' + xp + ' / 500';
-  xpEl.textContent    = xp + ' XP';
+  check.textContent = unlocked ? '✓' : '';
+  desc.textContent  = unlocked
+    ? 'Objectif atteint \u2014 ' + xp + ' XP DEEN'
+    : 'Atteins 500 XP pour d\u00e9verrouiller \u2014 ' + xp + ' / 500';
+  xpEl.textContent  = xp + ' XP';
 }
 
 /* ─── DEEN CLICK ─── */
@@ -570,7 +738,6 @@ function deenClick(id) {
   if (item.key && CARDS[item.key]) {
     openOverlay(id);
   } else {
-    // Validation directe (pas de carousel)
     deenState[id] = sessions + 1;
     persist();
     renderDeen();
@@ -579,8 +746,8 @@ function deenClick(id) {
 }
 
 /* ─── CAROUSEL ─── */
-let activeId  = null;
-let cardIdx   = 0;
+let activeId = null;
+let cardIdx  = 0;
 
 function openOverlay(id) {
   activeId = id;
@@ -673,7 +840,6 @@ function validateAct() {
   renderDeen();
   const label = item.labels[sessions] || ('SESSION ' + (sessions + 1));
   showToast('✓ ' + item.name + ' — ' + label + ' (+' + item.xp + ' XP)');
-  console.log('DEEN_DATA — [X] ' + item.name + ' | SESSION: ' + label + ' | XP: +' + item.xp);
   closeOverlay();
 }
 
@@ -681,9 +847,9 @@ document.getElementById('deenOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeOverlay();
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeOverlay();
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === 'Escape')      closeOverlay();
+  if (e.key === 'ArrowRight')  nextCard();
+  if (e.key === 'ArrowLeft')   prevCard();
 });
 
 /* ─── OBSIDIAN SAVE ─── */
@@ -692,22 +858,40 @@ async function saveHabits() {
   const done  = HABITS.filter(h => habitsState[h.id]).length;
   const score = Math.round(done / HABITS.length * 100);
   const xp    = deenXpTotal();
+  const note  = dayComment.trim();
 
   let content = `# HABITS — ${date}\n\n`;
   content += `**Score : ${score}% (${done}/${HABITS.length})**\n`;
   content += `**DEEN XP : ${xp} / 500**\n\n`;
+
+  if (note) {
+    content += `## Note du jour\n\n> ${note}\n\n`;
+  }
+
   content += `## Rituels\n\n`;
   HABITS.forEach(h => { content += `- ${habitsState[h.id] ? '✅' : '❌'} ${h.name}\n`; });
+
   content += `\n## DEEN\n\n`;
   DEEN.forEach(item => {
     const s = deenState[item.id] || 0;
     const sessionInfo = item.max > 1 ? ` (${s}/${item.max})` : '';
     content += `- ${s > 0 ? '✅' : '❌'} ${item.name}${sessionInfo} | XP: +${s * item.xp}\n`;
   });
+
+  const rawDone = RAWATIB.filter(r => rawatibState[r.id]);
+  if (rawDone.length > 0) {
+    content += `\n### Rawātib\n\n`;
+    RAWATIB.forEach(r => {
+      content += `- ${rawatibState[r.id] ? '✅' : '❌'} ${r.name} | XP: +${rawatibState[r.id] ? r.xp : 0}\n`;
+    });
+  }
+
   const muslimDay = xp >= 500;
   content += `\n## MUSLIM DAY\n\n`;
   content += `- ${muslimDay ? '✅' : '❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
-  content += muslimDay ? `- ⭐ Objectif DEEN atteint — journée complète\n` : `- ${500 - xp} XP manquants pour atteindre 500\n`;
+  content += muslimDay
+    ? `- ⭐ Objectif DEEN atteint — journée complète\n`
+    : `- ${500 - xp} XP manquants pour atteindre 500\n`;
   content += `\nDEEN_DATA — Total XP: ${xp} | Muslim Day: ${muslimDay ? 'OUI' : 'NON'}\n`;
 
   try {
@@ -754,8 +938,11 @@ load();
 setHeader();
 renderHabits();
 renderDeen();
+renderRawatib();
 updateScore();
 updateClock();
+// Restaurer le commentaire
+if (dayComment) document.getElementById('dayComment').value = dayComment;
 setInterval(updateClock, 10000);
 </script>
 </body>
