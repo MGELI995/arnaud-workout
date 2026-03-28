@@ -673,15 +673,15 @@ const EXERCISES = [
   },
   {
     id: 'squat',
-    name: 'SQUAT BARRE',
-    meta: '4 × 5–6 reps · 2–3 min repos',
-    defaultKg: 60,
+    name: 'SQUAT AVANT',
+    meta: '4 × 5–6 reps · 2–3 min repos · barre sur avant-bras croisés — dos droit',
+    defaultKg: 30,
     defaultReps: 5,
     unit: 'kg',
     stepKg: 2.5,
     stepReps: 1,
     minKg: 20,
-    maxKg: 200,
+    maxKg: 160,
     minReps: 1,
     maxReps: 20,
     isTime: false
@@ -702,23 +702,113 @@ const EXERCISES = [
     isTime: false
   },
   {
-    id: 'farmer',
-    name: "FARMER'S HOLD",
-    meta: '4 × 30–45 sec · 90 sec repos · charge max',
-    defaultKg: 32,
-    defaultReps: 40,
+    id: 'shrug_avant',
+    name: 'SHRUG GUIDÉE AVANT',
+    meta: '4 × 15 reps · 60 sec repos · enchaîner avec shrug arrière — trapèzes supérieurs',
+    defaultKg: 40,
+    defaultReps: 15,
     unit: 'kg',
-    stepKg: 2,
-    stepReps: 5,
-    minKg: 16,
-    maxKg: 80,
+    stepKg: 5,
+    stepReps: 1,
+    minKg: 10,
+    maxKg: 150,
+    minReps: 8,
+    maxReps: 25,
+    isTime: false
+  },
+  {
+    id: 'shrug_arriere',
+    name: 'SHRUG GUIDÉE ARRIÈRE',
+    meta: '4 × 15 reps · 90 sec repos après le superset · barre derrière — trapèzes moyens',
+    defaultKg: 40,
+    defaultReps: 15,
+    unit: 'kg',
+    stepKg: 5,
+    stepReps: 1,
+    minKg: 10,
+    maxKg: 150,
+    minReps: 8,
+    maxReps: 25,
+    isTime: false
+  },
+  {
+    id: 'harnais',
+    name: 'HARNAIS COU',
+    meta: '3 × 20 reps · 60 sec repos · tirage avant tête baissée — extenseurs cou',
+    defaultKg: 5,
+    defaultReps: 20,
+    unit: 'kg',
+    stepKg: 1.25,
+    stepReps: 2,
+    minKg: 0,
+    maxKg: 30,
     minReps: 10,
-    maxReps: 90,
-    isTime: true
+    maxReps: 30,
+    isTime: false
+  },
+  {
+    id: 'flexion_dos',
+    name: 'FLEXION COU — DOS',
+    meta: '3 × 15 reps · 45 sec repos · dos au banc, poids sur front — fléchisseurs cou',
+    defaultKg: 5,
+    defaultReps: 15,
+    unit: 'kg',
+    stepKg: 1.25,
+    stepReps: 1,
+    minKg: 0,
+    maxKg: 20,
+    minReps: 10,
+    maxReps: 25,
+    isTime: false
+  },
+  {
+    id: 'flexion_cote',
+    name: 'FLEXION COU — CÔTÉ D/G',
+    meta: '3 × 15 reps par côté · 45 sec repos · couché sur côté, poids sur tempe — SCM & scalènes',
+    defaultKg: 5,
+    defaultReps: 15,
+    unit: 'kg',
+    stepKg: 1.25,
+    stepReps: 1,
+    minKg: 0,
+    maxKg: 20,
+    minReps: 10,
+    maxReps: 25,
+    isTime: false
   }
 ];
 
-const SERIES_COUNT = { facepull: 4, dips: 5, squat: 4, rowing: 4, farmer: 4 };
+const SERIES_COUNT = { facepull: 4, dips: 5, squat: 4, rowing: 4, shrug_avant: 4, shrug_arriere: 4, harnais: 3, flexion_dos: 3, flexion_cote: 3 };
+
+// ==================== LAST SESSION ====================
+const STORAGE_KEY = 'workout_last_values';
+
+function loadLastSession() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const last = JSON.parse(saved);
+    EXERCISES.forEach(ex => {
+      if (last[ex.id]) {
+        const count = SERIES_COUNT[ex.id];
+        for (let i = 0; i < count; i++) {
+          if (last[ex.id][i]) {
+            state.values[ex.id][i].kg = last[ex.id][i].kg;
+            state.values[ex.id][i].reps = last[ex.id][i].reps;
+          }
+        }
+      }
+    });
+  } catch(e) {}
+}
+
+function saveLastSession() {
+  try {
+    const toSave = {};
+    EXERCISES.forEach(ex => { toSave[ex.id] = state.values[ex.id]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch(e) {}
+}
 const TIMER_DURATION = 120; // 2 minutes
 
 // ==================== STATE ====================
@@ -743,6 +833,8 @@ EXERCISES.forEach(ex => {
   state.validated[ex.id] = new Array(count).fill(false);
   state.notes[ex.id] = '';
 });
+
+loadLastSession();
 
 // ==================== RENDER ====================
 function renderExercises() {
@@ -978,6 +1070,8 @@ async function finishSession() {
   const date = new Date().toISOString().split('T')[0];
   const note = generateObsidianNote();
   document.getElementById('exportContent').textContent = note;
+
+  saveLastSession();
 
   try {
     const res = await fetch('https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/', {
