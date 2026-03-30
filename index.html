@@ -1077,7 +1077,7 @@ async function finishSession() {
     const res = await fetch('https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: note, date, filename: `SPORT/TRACKING/${date}-salle-force.md` })
+      body: JSON.stringify({ content: note, date, section: 'SPORT' })
     });
     if (res.ok) showToast('✓ Séance sauvegardée dans Obsidian');
     else throw new Error();

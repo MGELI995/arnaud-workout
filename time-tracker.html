@@ -445,7 +445,7 @@ async function pushToObsidian() {
     await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, date, filename: `DAILY NOTES/${date}.md`, section: 'TIME_FOCUS' })
+      body: JSON.stringify({ content, date, section: 'TIME_FOCUS' })
     });
   } catch(e) {}
 }
