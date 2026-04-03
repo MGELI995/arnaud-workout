@@ -138,6 +138,20 @@ async function ghPut(token, path, text, sha, commitMsg) {
   if (!res.ok) { const e = await res.text(); throw new Error(`GitHub PUT ${res.status}: ${e}`); }
 }
 
+async function ghPutWithRetry(token, path, getText, commitMsg, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    const file = await ghGet(token, path);
+    const text = getText(file?.text || '');
+    try {
+      await ghPut(token, path, text, file?.sha, commitMsg);
+      return;
+    } catch (e) {
+      if (i === maxRetries - 1) throw e;
+      await new Promise(r => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+}
+
 /* ── Section upsert ─────────────────────────────────────────────────────── */
 
 function markers(section) {
@@ -157,24 +171,15 @@ function insertInOrder(text, block, section) {
 
 async function upsertSection(token, path, date, section, sectionContent) {
   const { start, end } = markers(section);
+  const block = `${start}\n${sectionContent.trim()}\n${end}`;
+  const msg   = section === 'HABITS' ? `habits: ${date}` : section === 'SPORT' ? `sport: ${date}` : `daily: ${date}`;
 
-  // TIME_FOCUS : remplacement (l'app envoie l'état total, pas un delta)
-  let finalContent = sectionContent;
-
-  const file  = await ghGet(token, path);
-  const block = `${start}\n${finalContent.trim()}\n${end}`;
-
-  let newText;
-  if (!file) {
-    newText = `# DAILY — ${date}\n\n${block}\n`;
-  } else if (file.text.includes(start)) {
-    newText = file.text.replace(new RegExp(escRe(start) + '[\\s\\S]*?' + escRe(end)), block);
-  } else {
-    newText = insertInOrder(file.text, block, section);
-  }
-
-  const msg = section === 'HABITS' ? `habits: ${date}` : section === 'SPORT' ? `sport: ${date}` : `daily: ${date}`;
-  await ghPut(token, path, newText, file?.sha, msg);
+  await ghPutWithRetry(token, path, (existing) => {
+    if (!existing) return `# DAILY — ${date}\n\n${block}\n`;
+    if (existing.includes(start))
+      return existing.replace(new RegExp(escRe(start) + '[\\s\\S]*?' + escRe(end)), block);
+    return insertInOrder(existing, block, section);
+  }, msg);
 }
 
 
