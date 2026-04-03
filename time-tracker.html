@@ -406,13 +406,16 @@ function logTime() {
   btn.disabled = true;
   lastEntry = { cat: selectedCat, mins: selectedMins };
   todayLog[selectedCat] = (parseInt(todayLog[selectedCat]) || 0) + selectedMins;
+  selectedCat = null;
   saveToday();
   pushToObsidian();
-  showToast(`+${selectedMins}min ${selectedCat}`);
+  showToast(`+${lastEntry.mins}min ${lastEntry.cat}`);
   document.getElementById('validateBtn').style.display = '';
   document.getElementById('confirmRow').classList.remove('show');
   document.getElementById('undoBtn').classList.add('show');
-  document.getElementById('confirmBtn').disabled = false;
+  document.getElementById('centerCat').textContent = '';
+  document.getElementById('validateBtn').disabled = true;
+  setTimeout(() => { btn.disabled = false; }, 500);
   updateTotal();
   renderCats();
 }
