@@ -371,6 +371,7 @@ const HABITS = [
   { id: 'cou_scapula',         name: 'COU + SCAPULA',        desc: 'Exercices cou et scapula 15min' },
   { id: 'magnesium_glycinate', name: 'MAGNÉSIUM GLYCINATE',  desc: 'Prise avant sommeil' },
   { id: 'no_impulse_buy',     name: 'ACHAT → /DECISION',    desc: 'Aucun achat sans passer par /decision' },
+  { id: 'epouse_attention',   name: 'ATTENTION ÉPOUSE',     desc: 'Message, geste ou moment dédié à elle' },
 ];
 
 /* ─── DEEN ITEMS ─── */
@@ -577,7 +578,30 @@ let dayComment   = '';
 
 function getDate() { return new Date().toISOString().split('T')[0]; }
 
-function load() {
+function parseHabitsFromMarkdown(text) {
+  const rituelsText  = (text.match(/## Rituels\n\n([\s\S]*?)(?=\n## |\n### |$)/) || [])[1] || '';
+  const deenText     = (text.match(/## DEEN\n\n([\s\S]*?)(?=\n## |\n### |$)/)    || [])[1] || '';
+  const rawatibText  = (text.match(/### Rawātib\n\n([\s\S]*?)(?=\n## |\n### |$)/)|| [])[1] || '';
+  const commentM     = text.match(/> (.+)/);
+
+  const habits = {};
+  HABITS.forEach(h => { habits[h.id] = rituelsText.includes('✅ ' + h.name); });
+
+  const deen = {};
+  DEEN.forEach(item => {
+    if (!deenText.includes('✅ ' + item.name)) return;
+    const line = deenText.split('\n').find(l => l.includes(item.name) && l.includes('✅'));
+    const m = line && line.match(/\((\d+)\/\d+\)/);
+    deen[item.id] = m ? parseInt(m[1]) : 1;
+  });
+
+  const rawatib = {};
+  RAWATIB.forEach(r => { rawatib[r.id] = rawatibText.includes('✅ ' + r.name); });
+
+  return { habits, deen, rawatib, comment: commentM ? commentM[1] : '' };
+}
+
+async function load() {
   const raw = localStorage.getItem('habits_' + getDate());
   if (raw) {
     try {
@@ -587,7 +611,23 @@ function load() {
       rawatibState = s.rawatib  || {};
       dayComment   = s.comment  || '';
     } catch(e) {}
+    return;
   }
+  // localStorage vide → récupère l'état depuis GitHub via le worker
+  try {
+    const res = await fetch(WORKER_URL + '?date=' + getDate() + '&section=HABITS');
+    if (res.ok) {
+      const { text: habitsText } = await res.json();
+      if (habitsText) {
+        const parsed = parseHabitsFromMarkdown(habitsText);
+        habitsState  = parsed.habits;
+        deenState    = parsed.deen;
+        rawatibState = parsed.rawatib;
+        dayComment   = parsed.comment;
+        persist();
+      }
+    }
+  } catch(e) { /* silently fail — start fresh */ }
 }
 
 function persist() {
@@ -947,15 +987,15 @@ function updateClock() {
 }
 
 /* ─── INIT ─── */
-load();
 setHeader();
-renderHabits();
-renderDeen();
-renderRawatib();
-updateScore();
 updateClock();
-// Restaurer le commentaire
-if (dayComment) document.getElementById('dayComment').value = dayComment;
+load().then(() => {
+  renderHabits();
+  renderDeen();
+  renderRawatib();
+  updateScore();
+  if (dayComment) document.getElementById('dayComment').value = dayComment;
+});
 setInterval(updateClock, 10000);
 </script>
 </body>

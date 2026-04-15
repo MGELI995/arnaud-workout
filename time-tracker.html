@@ -245,13 +245,34 @@ function getDate() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function loadToday() {
+function parseTimeFocusFromMarkdown(text) {
+  const log = {};
+  text.split('\n').forEach(line => {
+    const m = line.match(/^([A-Z ]+)::\s*(\d+)/);
+    if (m) log[m[1].trim()] = parseInt(m[2]) || 0;
+  });
+  return log;
+}
+
+async function loadToday() {
   const d = localStorage.getItem(`tl_${getDate()}`);
   if (d) {
     const p = JSON.parse(d);
     todayLog = p.log || {};
     Object.keys(todayLog).forEach(k => todayLog[k] = parseInt(todayLog[k]) || 0);
+    return;
   }
+  // localStorage vide → récupère l'état depuis GitHub via le worker
+  try {
+    const res = await fetch(WORKER_URL + '?date=' + getDate() + '&section=TIME_FOCUS');
+    if (res.ok) {
+      const { text } = await res.json();
+      if (text) {
+        todayLog = parseTimeFocusFromMarkdown(text);
+        saveToday();
+      }
+    }
+  } catch(e) { /* silently fail */ }
 }
 
 function saveToday() {
@@ -491,12 +512,13 @@ function updateClock() {
     `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
 }
 
-loadToday();
 drawTicks();
-updateDial(selectedMins);
-renderCats();
-updateTotal();
 updateClock();
+loadToday().then(() => {
+  updateDial(selectedMins);
+  renderCats();
+  updateTotal();
+});
 setInterval(updateClock, 10000);
 </script>
 </body>
