@@ -8,12 +8,41 @@ export default {
   async fetch(request, env) {
     const corsHeaders = {
       'Access-Control-Allow-Origin':  '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-    if (request.method !== 'POST')   return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+
+    // ─── ROUTE GET /?date= → retourne la section HABITS du fichier GitHub ────
+    if (request.method === 'GET') {
+      const params  = new URL(request.url).searchParams;
+      const date    = params.get('date');
+      const section = params.get('section') || 'HABITS';
+      if (!date) return new Response(JSON.stringify({ error: 'date required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+      try {
+        const file = await ghGet(env.GITHUB_TOKEN, DAILY_PATH(date));
+        if (!file) return new Response(JSON.stringify({ text: null }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+        const START   = `<!-- ${section}_START -->`;
+        const END     = `<!-- ${section}_END -->`;
+        const si      = file.text.indexOf(START);
+        const ei      = file.text.indexOf(END);
+        const text    = (si !== -1 && ei !== -1) ? file.text.slice(si + START.length, ei).trim() : null;
+        return new Response(JSON.stringify({ text }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } catch(err) {
+        return new Response(JSON.stringify({ error: err.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    if (request.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: corsHeaders });
 
     const url = new URL(request.url);
 
