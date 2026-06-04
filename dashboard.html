@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f0f">
+<title>Arnaud</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg:    #0f0f0f;
+  --bg2:   #161616;
+  --bg3:   #1e1e1e;
+  --text:  #f0f0f0;
+  --muted: #5a5a5a;
+  --dim:   #333;
+  --green: #22c55e;
+  --font:  -apple-system, 'Inter', 'Segoe UI', sans-serif;
+  --nav-h: 54px;
+  --hdr-h: 48px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+header {
+  height: var(--hdr-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--bg2);
+}
+.h-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.h-right { display:flex; align-items:center; gap:10px; }
+#clock { font-size: 13px; color: var(--muted); font-weight: 400; }
+.sdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.3s;
+}
+.sdot.ok      { background: var(--green); }
+.sdot.pending { background: #f59e0b; animation: pulse 1s infinite; }
+.sdot.error   { background: #ef4444; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* ── VIEWS ── */
+.view { flex:1; overflow-y:auto; display:none; -webkit-overflow-scrolling:touch; }
+.view.active { display:block; }
+.content { padding: 8px 20px calc(var(--nav-h) + 20px); max-width: 520px; margin: 0 auto; }
+
+/* ── NAV ── */
+nav {
+  height: var(--nav-h);
+  display: flex;
+  border-top: 1px solid var(--bg2);
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.tab {
+  flex:1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.tab svg { opacity: 0.4; transition: opacity 0.15s; }
+.tab.active { color: var(--text); }
+.tab.active svg { opacity: 1; }
+
+/* ── XP LINE ── */
+.xp-line {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 14px 0 4px;
+  display: flex;
+  justify-content: space-between;
+}
+.xp-line span:last-child { color: var(--green); font-weight: 500; }
+
+/* ── SECTION ── */
+.section {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  padding: 20px 0 6px;
+}
+
+/* ── HABIT ROW ── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.1s;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.row:active { background: var(--bg2); }
+
+.circle {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dim);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.circle svg { display:none; }
+.row.done .circle {
+  background: var(--green);
+  border-color: var(--green);
+}
+.row.done .circle svg { display:block; }
+
+.ri { flex:1; min-width:0; }
+.rn {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+}
+.rd {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.row.done .rn {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--dim);
+}
+
+/* ── DEEN ROW ── */
+.drow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.1s;
+  margin: 0 -8px;
+}
+.drow:active { background: var(--bg2); }
+
+.dcircle {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dim);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.drow.partial .dcircle { border-color: var(--green); color: var(--green); }
+.drow.full    .dcircle { background: var(--green); border-color: var(--green); color: #000; }
+.drow.full    .rn { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--dim); }
+
+.dots-wrap { display:flex; gap:3px; flex-shrink:0; }
+.d { width:5px; height:5px; border-radius:50%; background:var(--dim); transition:background 0.15s; }
+.d.on { background: var(--green); }
+
+/* ── RAWATIB TOGGLE ── */
+.rt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 8px;
+  margin: 0 -8px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  user-select: none;
+  transition: background 0.1s;
+}
+.rt:active { background: var(--bg2); }
+.rt-arrow { font-size: 9px; transition: transform 0.2s; }
+.rt.open .rt-arrow { transform: rotate(90deg); }
+.rbody { display:none; }
+.rbody.open { display:block; }
+
+/* ── NOTE ── */
+.note-wrap { padding: 8px 0 0; }
+.note {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 12px 14px;
+  resize: none;
+  min-height: 64px;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+.note:focus { border-color: var(--dim); }
+.note::placeholder { color: var(--dim); }
+
+/* ── BUTTON ── */
+.btn {
+  width: 100%;
+  height: 46px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.15s;
+}
+.btn:active { background: var(--bg3); }
+.btn.saved { opacity:0.35; pointer-events:none; }
+.btn.success { color: var(--green); border-color: rgba(34,197,94,0.25); }
+
+/* ══════════ TIME VIEW ══════════ */
+
+.t-summary { padding: 4px 0; }
+.trow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+.trow + .trow { border-top: 1px solid var(--bg2); }
+.tcat { font-size: 13px; color: var(--text); }
+.tval { font-size: 13px; font-weight: 500; color: var(--green); }
+.trow.total .tcat { color: var(--muted); font-size:11px; font-weight:500; }
+.t-empty { font-size: 13px; color: var(--muted); padding: 10px 0; }
+
+.cgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cbtn {
+  padding: 11px 6px;
+  background: var(--bg2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.cbtn.sel { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.06); }
+.cbtn:active { opacity:0.6; }
+
+.dgrid {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.dbtn {
+  flex:1;
+  min-width: 42px;
+  height: 38px;
+  background: var(--bg2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.dbtn.sel { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.06); }
+.dbtn:active { opacity:0.6; }
+
+.t-actions { display:flex; gap:8px; margin-top: 4px; }
+.btnadd {
+  flex:1; height:46px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btnadd:active { background:var(--bg3); }
+.btnadd.ready { border-color: rgba(34,197,94,0.4); color: var(--green); }
+.btnadd:disabled { opacity:0.25; pointer-events:none; }
+.btnundo {
+  width:46px; height:46px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btnundo:active { color: var(--text); }
+.btnundo:disabled { opacity:0.15; pointer-events:none; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: var(--bg3);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  z-index: 999;
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="h-name">Arnaud</span>
+  <div class="h-right">
+    <span id="clock"></span>
+    <span class="sdot" id="sdot"></span>
+  </div>
+</header>
+
+<!-- ═══════════ HABITS ═══════════ -->
+<div class="view active" id="v-habits">
+<div class="content">
+
+  <div class="xp-line">
+    <span>Deen XP</span>
+    <span id="xpVal">0 / 500</span>
+  </div>
+
+  <div class="section">Quotidien</div>
+  <div id="hlist"></div>
+
+  <div class="section">Deen</div>
+  <div id="dlist"></div>
+
+  <div class="rt" id="rt" onclick="toggleR()">
+    <span>Rawātib</span>
+    <span class="rt-arrow">▶</span>
+  </div>
+  <div class="rbody" id="rbody">
+    <div id="rlist"></div>
+  </div>
+
+  <div class="section">Note du jour</div>
+  <div class="note-wrap">
+    <textarea class="note" id="noteEl" placeholder="Note libre…" oninput="saveNote()"></textarea>
+  </div>
+
+  <button class="btn" id="saveBtn" onclick="saveHabits()">Sauvegarder</button>
+
+</div>
+</div>
+
+<!-- ═══════════ TIME ═══════════ -->
+<div class="view" id="v-time">
+<div class="content">
+
+  <div class="section" style="padding-top:12px">Aujourd'hui</div>
+  <div class="t-summary" id="tsummary">
+    <div class="t-empty">Aucune session enregistrée</div>
+  </div>
+
+  <div class="section">Catégorie</div>
+  <div class="cgrid" id="cgrid"></div>
+
+  <div class="section">Durée</div>
+  <div class="dgrid" id="dgrid"></div>
+
+  <div class="t-actions">
+    <button class="btnadd" id="btnadd" onclick="addTime()" disabled>Ajouter</button>
+    <button class="btnundo" id="btnundo" onclick="undoLast()" disabled>↩</button>
+  </div>
+
+</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <button class="tab active" id="tab-habits" onclick="switchTab('habits')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+    </svg>
+    Habits
+  </button>
+  <button class="tab" id="tab-time" onclick="switchTab('time')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+    Time
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
+
+const HABITS = [
+  { id:'quran_15min',      name:'Coran 15 min',            desc:'Lecture ou écoute quotidienne' },
+  { id:'family_contact',   name:'Contact famille',         desc:'Appel ou message' },
+  { id:'supplements',      name:'Suppléments',             desc:'Prise quotidienne' },
+  { id:'english_15min',    name:'15 min anglais',          desc:'Lecture + vocab Anki' },
+  { id:'no_youtube',        name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement' },
+  { id:'kcal_2500',        name:'≤ 2500 kcal / 150g P+',  desc:'Plafond calorique + protéines' },
+  { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum' },
+  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30' },
+];
+
+const DEEN = [
+  { id:'salah_waqt',    name:'Ṣalāh — à l\'heure',      desc:'5 prières dans les temps',                     max:1, xp:250 },
+  { id:'adhkars',       name:'Adhkārs matin & soir',     desc:'Sayyid al-Istighfār · Protection',             max:2, xp:120 },
+  { id:'ayat_kursi',    name:'Āyat al-Kursī',            desc:'Verset du Trône — matin et soir',              max:2, xp:50  },
+  { id:'sourates_prot', name:'Protection 3 sourates',    desc:'Al-Ikhlāṣ · Al-Falaq · An-Nās (×3)',          max:1, xp:110 },
+  { id:'dhikr_rapide',  name:'Dhikr rapide',             desc:'Dhikr libre du cœur · matin et soir',         max:2, xp:25  },
+  { id:'dhikr_salah',   name:'Dhikr post-ṣalāh',        desc:'Tasbīḥ 33× — après chaque prière',            max:5, xp:40  },
+  { id:'ilm',           name:'ʿIlm — apprentissage',     desc:'Cours · conférence · lecture islamique',      max:1, xp:75  },
+  { id:'mosquee',       name:'Mosquée — jamāʿa',         desc:'Prière en congrégation',                      max:1, xp:100 },
+  { id:'sadaqa',        name:'Ṣadaqa du jour',           desc:'Aumône · même symbolique',                   max:1, xp:75  },
+  { id:'tahajjud',      name:'Tahajjud',                  desc:'Prière de nuit — dernier tiers',             max:1, xp:180 },
+  { id:'tawbah',        name:'Tawbah — repentir',        desc:'Istighfār sincère · 3 minutes',              max:1, xp:65  },
+];
+
+const RAWATIB = [
+  { id:'raw_fajr',        name:'Sunnah al-Fajr',          desc:'2 rakʿahs avant Fajr',                xp:50 },
+  { id:'raw_dhuhr_qab',   name:'Sunnah Dhuhr qabliyya',   desc:'4 rakʿahs avant Dhuhr',               xp:35 },
+  { id:'raw_dhuhr_bad',   name:'Sunnah Dhuhr baʿdiyya',   desc:'2 rakʿahs après Dhuhr',               xp:25 },
+  { id:'raw_asr',         name:'Sunnah ʿAṣr',             desc:'4 rakʿahs avant ʿAṣr',                xp:25 },
+  { id:'raw_maghrib_qab', name:'Sunnah Maghrib qabliyya', desc:'2 rakʿahs avant Maghrib',             xp:20 },
+  { id:'raw_maghrib_bad', name:'Sunnah Maghrib baʿdiyya', desc:'2 rakʿahs après Maghrib',             xp:30 },
+  { id:'raw_awwabeen',    name:'Ṣalāt al-Awwābīn',        desc:'6 rakʿahs après Maghrib',             xp:40 },
+  { id:'raw_isha',        name:'Sunnah ʿIshāʾ baʿdiyya',  desc:'2 rakʿahs après ʿIshāʾ',             xp:25 },
+  { id:'raw_witr',        name:'Witr',                     desc:'1-3 rakʿahs · avant le sommeil',      xp:70 },
+  { id:'raw_duha',        name:'Ṣalāt aḍ-Ḍuḥā',          desc:'2-8 rakʿahs · après lever du soleil', xp:50 },
+];
+
+const CATS = ['CORAN','ARABIC','BJJ','PODCAST','DEV','MASJID','ISLAMIC FINANCE','BOOK','FINANCE','ISLAM','ANGLAIS','GYM'];
+const DURS = [15, 30, 45, 60, 90, 120];
+
+const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
+
+let hs={}, ds={}, rs={}, note='';
+let tlog={}, lastEntry=null, selCat=null, selMins=null;
+let pushBusy=false, pushQueued=false;
+
+function date() {
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmt(m) {
+  if(!m) return '0m';
+  const h=Math.floor(m/60),r=m%60;
+  return h?(r?`${h}h${r}m`:`${h}h`):`${m}m`;
+}
+
+let toastT;
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2000);
+}
+function sync(st) { document.getElementById('sdot').className='sdot '+st; }
+
+function clock() {
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+clock(); setInterval(clock,10000);
+
+function switchTab(t) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+// ─── HABITS ───
+function xpTotal() {
+  let x=0;
+  DEEN.forEach(d=>{x+=(ds[d.id]||0)*d.xp;});
+  RAWATIB.forEach(r=>{if(rs[r.id])x+=r.xp;});
+  return x;
+}
+
+function renderXP() {
+  const x=xpTotal();
+  document.getElementById('xpVal').textContent=x+' / 500';
+}
+
+function renderHabits() {
+  document.getElementById('hlist').innerHTML=HABITS.map(h=>`
+    <div class="row ${hs[h.id]?'done':''}" onclick="tH('${h.id}')">
+      <div class="circle">${hs[h.id]?CHECK_SVG:''}</div>
+      <div class="ri">
+        <div class="rn">${h.name}</div>
+        <div class="rd">${h.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderDeen() {
+  document.getElementById('dlist').innerHTML=DEEN.map(d=>{
+    const c=ds[d.id]||0, full=c>=d.max, partial=c>0&&!full;
+    const cls=full?'full':partial?'partial':'';
+    const lbl=full?CHECK_SVG:partial?c:'';
+    const dotsHtml=d.max>1
+      ?`<div class="dots-wrap">${Array.from({length:d.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`:'';
+    return `
+    <div class="drow ${cls}" onclick="tD('${d.id}')">
+      <div class="dcircle">${lbl}</div>
+      <div class="ri">
+        <div class="rn">${d.name}</div>
+        <div class="rd">${d.desc}</div>
+      </div>
+      ${dotsHtml}
+    </div>`;
+  }).join('');
+}
+
+function renderRawatib() {
+  document.getElementById('rlist').innerHTML=RAWATIB.map(r=>`
+    <div class="row ${rs[r.id]?'done':''}" onclick="tR('${r.id}')">
+      <div class="circle">${rs[r.id]?CHECK_SVG:''}</div>
+      <div class="ri">
+        <div class="rn">${r.name}</div>
+        <div class="rd">${r.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+function tH(id){hs[id]=!hs[id];saveHL();renderHabits();}
+function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();}
+function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();}
+
+function saveNote(){note=document.getElementById('noteEl').value;localStorage.setItem('hn_'+date(),note);}
+
+function toggleR(){
+  const b=document.getElementById('rbody'),t=document.getElementById('rt');
+  const open=b.classList.toggle('open');
+  t.classList.toggle('open',open);
+}
+
+function saveHL(){localStorage.setItem('hs_'+date(),JSON.stringify({hs,ds,rs}));}
+
+async function loadHL(){
+  const d=date();
+  const raw=localStorage.getItem('hs_'+d);
+  if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};}
+  else{
+    try{
+      const r=await fetch(WORKER+'?date='+d+'&section=HABITS');
+      if(r.ok){const {text}=await r.json();/* format déjà parsé si rechargement */}
+    }catch(e){}
+  }
+  note=localStorage.getItem('hn_'+d)||'';
+  document.getElementById('noteEl').value=note;
+}
+
+async function saveHabits(){
+  const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpTotal();
+  const score=Math.round(done/HABITS.length*100);
+  let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
+  if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
+  content+=`## Rituels\n\n`;
+  HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
+  content+=`\n## DEEN\n\n`;
+  DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
+  const rawDone=RAWATIB.filter(r=>rs[r.id]);
+  if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
+  const md=xp>=500;
+  content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
+  content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-xp} XP manquants\n`;
+  content+=`\nDEEN_DATA — Total XP: ${xp} | Muslim Day: ${md?'OUI':'NON'}\n`;
+
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='…'; btn.classList.add('saved'); sync('pending');
+  const body=JSON.stringify({content,date:d,section:'HABITS'});
+  let ok=false;
+  for(let i=0;i<3;i++){
+    try{const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body});if(r.ok){ok=true;break};}catch(e){}
+  }
+  sync(ok?'ok':'error');
+  btn.classList.remove('saved');
+  if(ok){btn.textContent='Sauvegardé ✓';btn.classList.add('success');toast(`${done}/${HABITS.length} habits · ${xp} XP${xp>=500?' · Muslim Day':''}`);}
+  else{btn.textContent='Erreur';}
+  setTimeout(()=>{btn.textContent='Sauvegarder';btn.classList.remove('success');},2500);
+}
+
+// ─── TIME ───
+function renderSummary(){
+  const entries=CATS.filter(c=>tlog[c]>0);
+  if(!entries.length){document.getElementById('tsummary').innerHTML='<div class="t-empty">Aucune session enregistrée</div>';return;}
+  const total=entries.reduce((a,c)=>a+(tlog[c]||0),0);
+  document.getElementById('tsummary').innerHTML=
+    entries.map(c=>`<div class="trow"><span class="tcat">${c}</span><span class="tval">${fmt(tlog[c])}</span></div>`).join('')
+    +`<div class="trow total"><span class="tcat">Total</span><span class="tval">${fmt(total)}</span></div>`;
+}
+
+function renderCats(){
+  document.getElementById('cgrid').innerHTML=CATS.map(c=>
+    `<button class="cbtn ${selCat===c?'sel':''}" onclick="selC('${c}')">${c}</button>`
+  ).join('');
+}
+
+function renderDurs(){
+  document.getElementById('dgrid').innerHTML=DURS.map(d=>
+    `<button class="dbtn ${selMins===d?'sel':''}" onclick="selD(${d})">${fmt(d)}</button>`
+  ).join('');
+}
+
+function selC(c){selCat=selCat===c?null:c;renderCats();checkAdd();}
+function selD(d){selMins=selMins===d?null:d;renderDurs();checkAdd();}
+function checkAdd(){
+  const btn=document.getElementById('btnadd');
+  const ready=!!(selCat&&selMins);
+  btn.disabled=!ready;
+  btn.classList.toggle('ready',ready);
+}
+
+function addTime(){
+  if(!selCat||!selMins)return;
+  lastEntry={cat:selCat,mins:selMins};
+  tlog[selCat]=(tlog[selCat]||0)+selMins;
+  saveTL(); pushTime();
+  toast(`+${fmt(selMins)} ${selCat}`);
+  renderSummary();
+  document.getElementById('btnundo').disabled=false;
+  selCat=null;selMins=null;renderCats();renderDurs();checkAdd();
+}
+
+function undoLast(){
+  if(!lastEntry)return;
+  tlog[lastEntry.cat]=Math.max(0,(tlog[lastEntry.cat]||0)-lastEntry.mins);
+  if(!tlog[lastEntry.cat])delete tlog[lastEntry.cat];
+  toast(`↩ -${fmt(lastEntry.mins)} ${lastEntry.cat}`);
+  lastEntry=null;saveTL();pushTime();renderSummary();
+  document.getElementById('btnundo').disabled=true;
+}
+
+function saveTL(){localStorage.setItem('tl_'+date(),JSON.stringify({log:tlog}));}
+
+async function loadTL(){
+  const d=date();
+  const raw=localStorage.getItem('tl_'+d);
+  if(raw){tlog=JSON.parse(raw).log||{};return;}
+  try{
+    const r=await fetch(WORKER+'?date='+d+'&section=TIME_FOCUS');
+    if(r.ok){const {text}=await r.json();if(text){text.split('\n').forEach(l=>{const m=l.match(/^([A-Z ]+)::\s*(\d+)/);if(m)tlog[m[1].trim()]=parseInt(m[2])||0;});saveTL();}}
+  }catch(e){}
+}
+
+async function pushTime(){
+  if(pushBusy){pushQueued=true;return;}
+  pushBusy=true;sync('pending');
+  const d=date();
+  const content=`## TIME FOCUS\n\n`+CATS.map(c=>`${c}:: ${tlog[c]||0}`).join('\n');
+  const body=JSON.stringify({content,date:d,section:'TIME_FOCUS'});
+  let ok=false;
+  for(let i=0;i<3;i++){
+    try{const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body});if(r.ok){ok=true;break};}catch(e){}
+    if(i<2)await new Promise(r=>setTimeout(r,1500*(i+1)));
+  }
+  sync(ok?'ok':'error');
+  pushBusy=false;
+  if(pushQueued){pushQueued=false;pushTime();}
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&Object.keys(tlog).length>0)pushTime();
+});
+
+async function init(){
+  await Promise.all([loadHL(),loadTL()]);
+  renderHabits();renderDeen();renderRawatib();renderXP();
+  renderCats();renderDurs();renderSummary();
+}
+init();
+</script>
+</body>
+</html>
