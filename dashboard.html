@@ -94,15 +94,36 @@ nav {
 .tab.active { color: var(--text); }
 .tab.active svg { opacity: 1; }
 
-/* ── XP LINE ── */
-.xp-line {
-  font-size: 11px;
-  color: var(--muted);
-  padding: 14px 0 4px;
+/* ── SCORES ── */
+.scores-wrap {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 20px;
+  gap: 0;
 }
-.xp-line span:last-child { color: var(--green); font-weight: 500; }
+.score-block {
+  flex: 1;
+  text-align: center;
+}
+.score-label {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.score-num {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.3s;
+}
+.score-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
 
 /* ── SECTION ── */
 .section {
@@ -187,6 +208,8 @@ nav {
 .drow.partial .dcircle { border-color: var(--green); color: var(--green); }
 .drow.full    .dcircle { background: var(--green); border-color: var(--green); color: #000; }
 .drow.full    .rn { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--dim); }
+.circle-fail { border-color: #ef4444 !important; }
+.row.hifz-fail .rn { color: #ef4444; }
 
 .dots-wrap { display:flex; gap:3px; flex-shrink:0; }
 .d { width:5px; height:5px; border-radius:50%; background:var(--dim); transition:background 0.15s; }
@@ -343,6 +366,77 @@ nav {
 .btnundo:active { color: var(--text); }
 .btnundo:disabled { opacity:0.15; pointer-events:none; }
 
+/* ── INFO BTN ── */
+.info-btn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--bg3);
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+  font-family: var(--font);
+}
+.info-btn:active { border-color: var(--text); color: var(--text); }
+
+/* ── OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.overlay.open { display: flex; }
+.ov-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--bg2);
+  flex-shrink: 0;
+}
+.ov-title { font-size: 13px; font-weight: 600; }
+.ov-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg2); border: none;
+  color: var(--muted); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.1s;
+}
+.ov-close:active { color: var(--text); }
+.ov-body {
+  flex: 1; overflow-y: auto; padding: 24px 20px;
+  -webkit-overflow-scrolling: touch;
+  max-width: 520px; margin: 0 auto; width: 100%;
+}
+.card-block {
+  margin-bottom: 32px; padding-bottom: 32px;
+  border-bottom: 1px solid var(--bg2);
+}
+.card-block:last-child { border-bottom: none; margin-bottom: 0; }
+.card-ar {
+  font-size: 24px; line-height: 2;
+  text-align: right; direction: rtl;
+  color: var(--text); margin-bottom: 14px;
+  font-family: 'Scheherazade New', 'Amiri', serif;
+}
+.card-ph {
+  font-size: 12px; color: var(--muted);
+  line-height: 1.7; margin-bottom: 12px; font-style: italic;
+}
+.card-tr {
+  font-size: 14px; color: var(--text);
+  line-height: 1.7; margin-bottom: 10px;
+}
+.card-ctx {
+  font-size: 11px; color: var(--muted); line-height: 1.6;
+}
+.card-ctx em { font-style: italic; color: #aaa; }
+.card-ctx strong { color: var(--text); font-weight: 500; }
+
 /* ── TOAST ── */
 .toast {
   position: fixed;
@@ -378,9 +472,21 @@ nav {
 <div class="view active" id="v-habits">
 <div class="content">
 
-  <div class="xp-line">
-    <span>Deen XP</span>
-    <span id="xpVal">0 / 500</span>
+  <div class="scores-wrap">
+    <div class="score-block">
+      <div class="score-label">Alignement</div>
+      <div class="score-num" id="scoreAlign">0%</div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-block">
+      <div class="score-label">Deen</div>
+      <div class="score-num" id="scoreDeen">0%</div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-block">
+      <div class="score-label">Dounia</div>
+      <div class="score-num" id="scoreDounia">0%</div>
+    </div>
   </div>
 
   <div class="section">Quotidien</div>
@@ -402,7 +508,6 @@ nav {
     <textarea class="note" id="noteEl" placeholder="Note libre…" oninput="saveNote()"></textarea>
   </div>
 
-  <button class="btn" id="saveBtn" onclick="saveHabits()">Sauvegarder</button>
 
 </div>
 </div>
@@ -446,20 +551,29 @@ nav {
   </button>
 </nav>
 
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="ov-header">
+    <span class="ov-title" id="ovTitle"></span>
+    <button class="ov-close" onclick="closeCard()">×</button>
+  </div>
+  <div class="ov-body" id="ovBody"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
 
 const HABITS = [
-  { id:'quran_15min',      name:'Coran 15 min',            desc:'Lecture ou écoute quotidienne' },
+  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30', weight:6 },
+  { id:'quran_20min',      name:'Coran 20 min',            desc:'Lecture ou écoute quotidienne' },
   { id:'family_contact',   name:'Contact famille',         desc:'Appel ou message' },
-  { id:'supplements',      name:'Suppléments',             desc:'Prise quotidienne' },
-  { id:'english_15min',    name:'15 min anglais',          desc:'Lecture + vocab Anki' },
-  { id:'no_youtube',        name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement' },
-  { id:'kcal_2500',        name:'≤ 2500 kcal / 150g P+',  desc:'Plafond calorique + protéines' },
+  { id:'supplements',      name:'Suppléments',             desc:'Créatine · D3 · Magnésium', max:3, xp:20 },
+  { id:'english_15min',    name:'15 min anglais',          desc:'Podcast, manga, vocab Anki' },
+  { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement' },
+  { id:'kcal_2500',        name:'≤ 2500 kcal / 150g P+',  desc:'Plafond calories · Objectif protéines', max:2, xp:15 },
   { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum' },
-  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30' },
 ];
 
 const DEEN = [
@@ -469,7 +583,7 @@ const DEEN = [
   { id:'sourates_prot', name:'Protection 3 sourates',    desc:'Al-Ikhlāṣ · Al-Falaq · An-Nās (×3)',          max:1, xp:110 },
   { id:'dhikr_rapide',  name:'Dhikr rapide',             desc:'Dhikr libre du cœur · matin et soir',         max:2, xp:25  },
   { id:'dhikr_salah',   name:'Dhikr post-ṣalāh',        desc:'Tasbīḥ 33× — après chaque prière',            max:5, xp:40  },
-  { id:'ilm',           name:'ʿIlm — apprentissage',     desc:'Cours · conférence · lecture islamique',      max:1, xp:75  },
+  { id:'ilm',           name:'Ṭalab al-ʿIlm',            desc:'Cours · conférence · lecture islamique · obligation',  max:1, xp:75  },
   { id:'mosquee',       name:'Mosquée — jamāʿa',         desc:'Prière en congrégation',                      max:1, xp:100 },
   { id:'sadaqa',        name:'Ṣadaqa du jour',           desc:'Aumône · même symbolique',                   max:1, xp:75  },
   { id:'tahajjud',      name:'Tahajjud',                  desc:'Prière de nuit — dernier tiers',             max:1, xp:180 },
@@ -488,6 +602,38 @@ const RAWATIB = [
   { id:'raw_witr',        name:'Witr',                     desc:'1-3 rakʿahs · avant le sommeil',      xp:70 },
   { id:'raw_duha',        name:'Ṣalāt aḍ-Ḍuḥā',          desc:'2-8 rakʿahs · après lever du soleil', xp:50 },
 ];
+
+const CARDS = {
+  adhkars: { label:'Adhkārs matin & soir', cards:[
+    { ar:'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ\nخَلَقْتَنِي وَأَنَا عَبْدُكَ\nوَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ\nأَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ\nأَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي\nفَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ', ph:'Allāhumma anta Rabbī lā ilāha illā anta, khalaqtanī wa anā ʿabduk, wa anā ʿalā ʿahdika wa waʿdika mā astaṭaʿt, aʿūdhu bika min sharri mā ṣanaʿt, abūʾu laka biniʿmatika ʿalayya wa abūʾu bidhanbī, faghfir lī fa-innahu lā yaghfiru l-dhunūba illā ant.', tr:'Ô Allah, Tu es mon Seigneur. Il n\'y a de dieu que Toi. Tu m\'as créé et je suis Ton serviteur. Je tiens mon engagement et ma promesse envers Toi dans la mesure du possible. Je cherche refuge en Toi contre le mal de ce que j\'ai commis. Je reconnais Tes bienfaits sur moi et je reconnais mes péchés. Pardonne-moi, car nul ne pardonne les péchés excepté Toi.', ctx:'<strong>Sayyid al-Istighfār.</strong> Le Prophète ﷺ : <em>"Celui qui le dit le matin avec certitude et meurt avant le soir entrera au Paradis."</em> — al-Bukhārī (6306).' },
+    { ar:'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ\nفِي الْأَرْضِ وَلَا فِي السَّمَاءِ\nوَهُوَ السَّمِيعُ الْعَلِيمُ', ph:'Bismillāhi l-ladhī lā yaḍurru maʿa-smihi shayʾun fī l-arḍi wa lā fī l-samāʾi wa huwa l-Samīʿu l-ʿAlīm.', tr:'Au nom d\'Allah, avec Qui rien ne peut causer de tort — ni sur la terre ni dans le ciel — et Il est l\'Audient, l\'Omniscient. <strong>(×3)</strong>', ctx:'Le Prophète ﷺ : <em>"Quiconque le dit 3× le matin et 3× le soir, rien ne lui causera de tort."</em> — Abū Dāwūd (5088).' },
+    { ar:'رَضِيتُ بِاللَّهِ رَبًّا\nوَبِالْإِسْلَامِ دِينًا\nوَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا', ph:'Raḍītu billāhi Rabbā, wa bil-Islāmi dīnā, wa bi-Muḥammadin ṣallallāhu ʿalayhi wa sallama nabiyyā.', tr:'Je suis satisfait d\'Allah comme Seigneur, de l\'Islam comme religion, et de Muḥammad ﷺ comme Prophète. <strong>(×3)</strong>', ctx:'Le Prophète ﷺ : <em>"Quiconque le dit 3× le matin et le soir, il est un droit sur Allah de le satisfaire le Jour de la Résurrection."</em> — Aḥmad, Abū Dāwūd.' },
+    { ar:'اللَّهُمَّ عَافِنِي فِي بَدَنِي\nاللَّهُمَّ عَافِنِي فِي سَمْعِي\nاللَّهُمَّ عَافِنِي فِي بَصَرِي\nلَا إِلَهَ إِلَّا أَنْتَ', ph:'Allāhumma ʿāfinī fī badanī, Allāhumma ʿāfinī fī samʿī, Allāhumma ʿāfinī fī baṣarī, lā ilāha illā ant.', tr:'Ô Allah, donne la santé à mon corps. Ô Allah, donne la santé à mon ouïe. Ô Allah, donne la santé à ma vue. Il n\'y a de dieu que Toi.', ctx:'Dhikr du matin et du soir — Abū Dāwūd (5090). Couvre la totalité du bien-être physique et des sens.' }
+  ]},
+  ayat_kursi: { label:'Āyat al-Kursī', cards:[
+    { ar:'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ\nلَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ\nلَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ\nمَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ\nيَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ\nوَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ\nوَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ\nوَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ', ph:'Allāhu lā ilāha illā Huwa l-Ḥayyu l-Qayyūm. Lā taʾkhudhuhu sinatun wa lā nawm. Lahu mā fī s-samāwāti wa mā fī l-arḍ. Man dhā lladhī yashfaʿu ʿindahu illā bi-idhnih. Yaʿlamu mā bayna aydīhim wa mā khalfahum. Wa lā yuḥīṭūna bi-shayʾin min ʿilmihi illā bi-mā shāʾ. Wasiʿa kursiyyuhu s-samāwāti wa l-arḍ. Wa lā yaʾūduhu ḥifẓuhumā wa Huwa l-ʿAliyyu l-ʿAẓīm.', tr:'<strong>Allah — point de divinité si ce n\'est Lui —</strong> le Vivant, Celui qui subsiste par Lui-même. Ni somnolence ni sommeil ne Le saisissent. À Lui appartient ce qui est dans les cieux et sur la terre. Qui peut intercéder auprès de Lui sans Sa permission ? Il sait ce qui est devant eux et ce qui est derrière eux. Ils n\'embrassent de Sa science que ce qu\'Il veut. Son Trône déborde les cieux et la terre. Leur garde ne Lui pèse pas : Il est le Très Haut, l\'Immense.', ctx:'Le Prophète ﷺ : <em>"Celui qui la récite le soir est protégé des djinns jusqu\'au matin. Celui qui la récite le matin est protégé jusqu\'au soir."</em> — al-Ḥākim. C\'est le plus grand verset du Coran — al-Bukhārī (2773).' }
+  ]},
+  sourates_prot: { label:'Protection 3 sourates', cards:[
+    { ar:'قُلْ هُوَ اللَّهُ أَحَدٌ\nاللَّهُ الصَّمَدُ\nلَمْ يَلِدْ وَلَمْ يُولَدْ\nوَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ', ph:'Qul Huwa Llāhu Aḥad. Allāhu ṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad.', tr:'Dis : Il est Allah, Unique. Allah, le Seul à être imploré. Il n\'a pas engendré et n\'a pas été engendré. Et nul n\'est égal à Lui.', ctx:'<em>Sūrat al-Ikhlāṣ</em> — Équivaut au tiers du Coran. Réciter les 3 sourates ×3 matin et soir : <em>"Elles te suffiront contre tout mal."</em> — Abū Dāwūd, at-Tirmidhī.' },
+    { ar:'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ\nمِن شَرِّ مَا خَلَقَ\nوَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ\nوَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ\nوَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ', ph:'Qul aʿūdhu bi-Rabbi l-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharri n-naffāthāti fī l-ʿuqad. Wa min sharri ḥāsidin idhā ḥasad.', tr:'Dis : Je cherche protection auprès du Seigneur de l\'aube — contre le mal de ce qu\'Il a créé, contre l\'obscurité qui s\'étend, contre celles qui soufflent sur les nœuds, contre l\'envieux quand il envie.', ctx:'<em>Sūrat al-Falaq</em> — Protection contre les maux extérieurs : sorcellerie, mauvais œil, envie.' },
+    { ar:'قُلْ أَعُوذُ بِرَبِّ النَّاسِ\nمَلِكِ النَّاسِ\nإِلَٰهِ النَّاسِ\nمِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ\nالَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ\nمِنَ الْجِنَّةِ وَالنَّاسِ', ph:'Qul aʿūdhu bi-Rabbi n-nās. Maliki n-nās. Ilāhi n-nās. Min sharri l-waswāsi l-khannās. Alladhī yuwaswisu fī ṣudūri n-nās. Mina l-jinnati wa n-nās.', tr:'Dis : Je cherche protection auprès du Seigneur des hommes, le Roi des hommes, le Dieu des hommes — contre le mal du tentateur furtif qui souffle le mal dans les poitrines des hommes.', ctx:'<em>Sūrat an-Nās</em> — Protection contre les maux intérieurs : les souffles de Satan sur le cœur — at-Tirmidhī.' }
+  ]},
+  dhikr_rapide: { label:'Dhikr rapide', cards:[
+    { ar:'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', ph:'SubḥānAllāhi wa bi-ḥamdih', tr:'Gloire à Allah et par Sa louange. À répéter librement, en marchant, en conduisant, en attendant.', ctx:'Le Prophète ﷺ : <em>"Deux paroles légères sur la langue, lourdes dans la balance, aimées du Très Miséricordieux : SubḥānAllāhi wa bi-ḥamdih, SubḥānAllāhi l-ʿAẓīm."</em> — al-Bukhārī (6682).' },
+    { ar:'لَا إِلَهَ إِلَّا اللَّهُ\nوَحْدَهُ لَا شَرِيكَ لَهُ\nلَهُ الْمُلْكُ وَلَهُ الْحَمْدُ\nوَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', ph:'Lā ilāha illā Llāhu waḥdahu lā sharīka lahu, lahu l-mulku wa lahu l-ḥamdu wa huwa ʿalā kulli shayʾin qadīr.', tr:'Il n\'y a de divinité qu\'Allah, Seul, sans associé. À Lui la Royauté, à Lui la louange, et Il est Omnipotent.', ctx:'Le Prophète ﷺ : <em>"Celui qui le dit 100× dans la journée a la récompense d\'affranchir 10 esclaves, 100 bonnes actions écrites, 100 mauvaises effacées."</em> — al-Bukhārī (3293).' },
+    { ar:'أَسْتَغْفِرُ اللَّهَ\nلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', ph:'Astaghfiru Llāh — Lā ḥawla wa lā quwwata illā billāh.', tr:'Je demande pardon à Allah. — Il n\'y a de force et de puissance qu\'en Allah.', ctx:'<em>Lā ḥawla wa lā quwwata illā billāh</em> est un trésor du Paradis — al-Bukhārī (4205).' }
+  ]},
+  dhikr_salah: { label:'Dhikr post-ṣalāh', cards:[
+    { ar:'سُبْحَانَ اللَّهِ ×33\nالْحَمْدُ لِلَّهِ ×33\nاللَّهُ أَكْبَرُ ×33', ph:'SubḥānAllāh ×33 — Al-Ḥamdu lillāh ×33 — Allāhu Akbar ×33', tr:'<strong>Après chaque prière.</strong> Gloire à Allah (33×) — La louange est à Allah (33×) — Allah est le Plus Grand (33×).', ctx:'Le Prophète ﷺ : <em>"Ses péchés seront effacés, même s\'ils étaient aussi nombreux que l\'écume de la mer."</em> — Muslim (597).' },
+    { ar:'اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', ph:'Āyat al-Kursī complète après chaque prière obligatoire.', tr:'Réciter Āyat al-Kursī complète après chaque ṣalāh obligatoire.', ctx:'Le Prophète ﷺ : <em>"Quiconque récite Āyat al-Kursī après chaque prière obligatoire, rien ne le sépare du Paradis sinon la mort."</em> — an-Nasāʾī.' }
+  ]},
+  tawbah: { label:'Tawbah — repentir', cards:[
+    { ar:'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ\nالَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ\nوَأَتُوبُ إِلَيْهِ', ph:'Astaghfiru Llāha l-ʿAẓīma lladhī lā ilāha illā Huwa l-Ḥayyu l-Qayyūmu wa atūbu ilayh.', tr:'Je demande pardon à Allah l\'Immense, en dehors duquel il n\'y a pas de divinité, le Vivant, Celui qui subsiste par Lui-même, et je me repens vers Lui.', ctx:'Le Prophète ﷺ faisait istighfār plus de 70× par jour — al-Bukhārī (6307). La Tawbah efface les péchés comme si on n\'en avait jamais commis.' }
+  ]},
+  tahajjud: { label:'Tahajjud', cards:[
+    { ar:'يَنْزِلُ رَبُّنَا تَبَارَكَ وَتَعَالَى كُلَّ لَيْلَةٍ\nإِلَى السَّمَاءِ الدُّنْيَا حِينَ يَبْقَى ثُلُثُ اللَّيْلِ الْآخِرُ\nفَيَقُولُ مَنْ يَدْعُونِي فَأَسْتَجِيبَ لَهُ\nمَنْ يَسْأَلُنِي فَأُعْطِيَهُ\nمَنْ يَسْتَغْفِرُنِي فَأَغْفِرَ لَهُ', ph:'Yanzilu Rabbunā... man yadʿūnī fa-astajība lah, man yasʾalunī fa-uʿṭiyah, man yastaghfironī fa-aghfira lah.', tr:'Notre Seigneur descend chaque nuit vers le ciel le plus bas lorsqu\'il reste le dernier tiers de la nuit et dit : Qui M\'invoque pour que Je lui réponde ? Qui Me demande pour que Je lui donne ? Qui Me demande pardon pour que Je lui pardonne ?', ctx:'al-Bukhārī (1145), Muslim (758). Même 2 rakʿas suffisent. C\'est le moment où les invocations sont exaucées.' }
+  ]},
+};
 
 const CATS = ['CORAN','ARABIC','BJJ','PODCAST','DEV','MASJID','ISLAMIC FINANCE','BOOK','FINANCE','ISLAM','ANGLAIS','GYM'];
 const DURS = [15, 30, 45, 60, 90, 120];
@@ -532,27 +678,68 @@ function switchTab(t) {
 }
 
 // ─── HABITS ───
-function xpTotal() {
+function scoreJour() {
+  // Ḥifẓ al-farj = weight:6, autres = weight:1 (multi-coches = 1 si ≥1)
+  let total=0, done=0;
+  HABITS.forEach(h=>{
+    const w=h.weight||1;
+    total+=w;
+    const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
+    if(val>0) done+=w;
+  });
+  return total>0?Math.round(done/total*100):0;
+}
+
+function xpDeen() {
   let x=0;
   DEEN.forEach(d=>{x+=(ds[d.id]||0)*d.xp;});
   RAWATIB.forEach(r=>{if(rs[r.id])x+=r.xp;});
   return x;
 }
+function xpDeenMax() {
+  const d=DEEN.reduce((s,x)=>s+x.max*x.xp,0);
+  const r=RAWATIB.reduce((s,x)=>s+x.xp,0);
+  return d+r;
+}
+function xpTotal(){ return xpDeen(); }
+
+function color(pct) {
+  return pct>=80?'var(--green)':pct>=50?'#f59e0b':'#ef4444';
+}
 
 function renderXP() {
-  const x=xpTotal();
-  document.getElementById('xpVal').textContent=x+' / 500';
+  const dounia = scoreJour();
+  const deenPct = Math.min(Math.round(xpDeen()/500*100), 100);
+  const align = Math.round(deenPct*0.6 + dounia*0.4);
+
+  const elA = document.getElementById('scoreAlign');
+  const elD = document.getElementById('scoreDeen');
+  const elQ = document.getElementById('scoreDounia');
+
+  elA.textContent = align+'%';   elA.style.color = color(align);
+  elD.textContent = deenPct+'%'; elD.style.color = color(deenPct);
+  elQ.textContent = dounia+'%';  elQ.style.color = color(dounia);
 }
 
 function renderHabits() {
-  document.getElementById('hlist').innerHTML=HABITS.map(h=>`
-    <div class="row ${hs[h.id]?'done':''}" onclick="tH('${h.id}')">
-      <div class="circle">${hs[h.id]?CHECK_SVG:''}</div>
-      <div class="ri">
-        <div class="rn">${h.name}</div>
-        <div class="rd">${h.desc}</div>
-      </div>
-    </div>`).join('');
+  document.getElementById('hlist').innerHTML=HABITS.map(h=>{
+    if(h.max && h.max>1){
+      const c=hs[h.id]||0, full=c>=h.max, partial=c>0&&!full;
+      const cls=full?'full':partial?'partial':'';
+      const lbl=full?CHECK_SVG:partial?c:'';
+      const dots=`<div class="dots-wrap">${Array.from({length:h.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`;
+      return `<div class="drow ${cls}" onclick="tH('${h.id}')">
+        <div class="dcircle">${lbl}</div>
+        <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+        ${dots}
+      </div>`;
+    }
+    const done=!!hs[h.id];
+    return `<div class="row ${done?'done':''}" onclick="tH('${h.id}')">
+      <div class="circle">${done?CHECK_SVG:''}</div>
+      <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+    </div>`;
+  }).join('');
 }
 
 function renderDeen() {
@@ -562,6 +749,8 @@ function renderDeen() {
     const lbl=full?CHECK_SVG:partial?c:'';
     const dotsHtml=d.max>1
       ?`<div class="dots-wrap">${Array.from({length:d.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`:'';
+    const infoBtn=CARDS[d.id]
+      ?`<button class="info-btn" onclick="openCard(event,'${d.id}')">i</button>`:'';
     return `
     <div class="drow ${cls}" onclick="tD('${d.id}')">
       <div class="dcircle">${lbl}</div>
@@ -570,8 +759,28 @@ function renderDeen() {
         <div class="rd">${d.desc}</div>
       </div>
       ${dotsHtml}
+      ${infoBtn}
     </div>`;
   }).join('');
+}
+
+function openCard(e, id) {
+  e.stopPropagation();
+  const data=CARDS[id]; if(!data) return;
+  document.getElementById('ovTitle').textContent=data.label;
+  document.getElementById('ovBody').innerHTML=data.cards.map(c=>`
+    <div class="card-block">
+      <div class="card-ar">${c.ar.replace(/\n/g,'<br>')}</div>
+      <div class="card-ph">${c.ph}</div>
+      <div class="card-tr">${c.tr}</div>
+      <div class="card-ctx">${c.ctx}</div>
+    </div>`).join('');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCard() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow='';
 }
 
 function renderRawatib() {
@@ -585,11 +794,22 @@ function renderRawatib() {
     </div>`).join('');
 }
 
-function tH(id){hs[id]=!hs[id];saveHL();renderHabits();}
-function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();}
-function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();}
+function tH(id){
+  const h=HABITS.find(x=>x.id===id);
+  if(h&&h.max&&h.max>1){ hs[id]=((hs[id]||0)>=h.max)?0:(hs[id]||0)+1; }
+  else{ hs[id]=!hs[id]; }
+  saveHL();renderHabits();renderXP();pushHabits();
+}
+function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();pushHabits();}
+function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();pushHabits();}
 
-function saveNote(){note=document.getElementById('noteEl').value;localStorage.setItem('hn_'+date(),note);}
+let noteTimer;
+function saveNote(){
+  note=document.getElementById('noteEl').value;
+  localStorage.setItem('hn_'+date(),note);
+  clearTimeout(noteTimer);
+  noteTimer=setTimeout(pushHabits, 1500);
+}
 
 function toggleR(){
   const b=document.getElementById('rbody'),t=document.getElementById('rt');
@@ -613,6 +833,34 @@ async function loadHL(){
   document.getElementById('noteEl').value=note;
 }
 
+let hPushBusy=false, hPushQueued=false;
+async function pushHabits(){
+  if(hPushBusy){hPushQueued=true;return;}
+  hPushBusy=true; sync('pending');
+  const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
+  const score=Math.round(done/HABITS.length*100);
+  let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
+  if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
+  content+=`## Rituels\n\n`;
+  HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
+  content+=`\n## DEEN\n\n`;
+  DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
+  const rawDone=RAWATIB.filter(r=>rs[r.id]);
+  if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
+  const md=xp>=500;
+  content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
+  content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
+  content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
+  const body=JSON.stringify({content,date:d,section:'HABITS'});
+  let ok=false;
+  for(let i=0;i<3;i++){
+    try{const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body});if(r.ok){ok=true;break};}catch(e){}
+  }
+  sync(ok?'ok':'error');
+  hPushBusy=false;
+  if(hPushQueued){hPushQueued=false;pushHabits();}
+}
+
 async function saveHabits(){
   const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpTotal();
   const score=Math.round(done/HABITS.length*100);
@@ -627,7 +875,7 @@ async function saveHabits(){
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-xp} XP manquants\n`;
-  content+=`\nDEEN_DATA — Total XP: ${xp} | Muslim Day: ${md?'OUI':'NON'}\n`;
+  content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
 
   const btn=document.getElementById('saveBtn');
   btn.textContent='…'; btn.classList.add('saved'); sync('pending');
