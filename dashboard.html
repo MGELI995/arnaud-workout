@@ -821,14 +821,25 @@ function saveHL(){localStorage.setItem('hs_'+date(),JSON.stringify({hs,ds,rs}));
 
 async function loadHL(){
   const d=date();
+  // Affichage immédiat depuis localStorage
   const raw=localStorage.getItem('hs_'+d);
   if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};}
-  else{
-    try{
-      const r=await fetch(WORKER+'?date='+d+'&section=HABITS');
-      if(r.ok){const {text}=await r.json();/* format déjà parsé si rechargement */}
-    }catch(e){}
-  }
+  // Toujours fetch GitHub pour sync multi-appareils
+  try{
+    const r=await fetch(WORKER+'?date='+d+'&section=HABITS&t='+Date.now());
+    if(r.ok){
+      const {text}=await r.json();
+      if(text){
+        const m=text.match(/<!-- STATE:(.*?) -->/);
+        if(m){
+          const p=JSON.parse(m[1]);
+          hs=p.hs||{}; ds=p.ds||{}; rs=p.rs||{};
+          saveHL();
+          renderHabits(); renderDeen(); renderRawatib(); renderXP();
+        }
+      }
+    }
+  }catch(e){}
   note=localStorage.getItem('hn_'+d)||'';
   document.getElementById('noteEl').value=note;
 }
@@ -851,6 +862,7 @@ async function pushHabits(){
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
   content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
+  content+=`<!-- STATE:${JSON.stringify({hs,ds,rs})} -->`;
   const body=JSON.stringify({content,date:d,section:'HABITS'});
   let ok=false;
   for(let i=0;i<3;i++){
