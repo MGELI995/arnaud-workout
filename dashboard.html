@@ -366,6 +366,38 @@ nav {
 .btnundo:active { color: var(--text); }
 .btnundo:disabled { opacity:0.15; pointer-events:none; }
 
+/* ── DATE NAV ── */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg2);
+  flex-shrink: 0;
+}
+.dnav-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.12s;
+  font-family: var(--font);
+}
+.dnav-btn:active { background: var(--bg2); color: var(--text); }
+.dnav-btn:disabled { opacity: 0.2; pointer-events: none; }
+.dnav-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 160px;
+  text-align: center;
+}
+.dnav-label.past { color: var(--muted); }
+
 /* ── INFO BTN ── */
 .info-btn {
   width: 22px; height: 22px;
@@ -467,6 +499,11 @@ nav {
     <span class="sdot" id="sdot"></span>
   </div>
 </header>
+<div class="date-nav">
+  <button class="dnav-btn" onclick="prevDay()">←</button>
+  <span class="dnav-label" id="dateLabel"></span>
+  <button class="dnav-btn" id="nextBtn" onclick="nextDay()">→</button>
+</div>
 
 <!-- ═══════════ HABITS ═══════════ -->
 <div class="view active" id="v-habits">
@@ -643,11 +680,57 @@ const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" s
 let hs={}, ds={}, rs={}, note='';
 let tlog={}, lastEntry=null, selCat=null, selMins=null;
 let pushBusy=false, pushQueued=false;
+let hPushBusy2=false, hPushQueued2=false;
+
+let currentDate = '';
 
 function date() {
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+
+function renderDateNav() {
+  const today = date();
+  const isToday = currentDate === today;
+  const d = new Date(currentDate + 'T12:00:00');
+  const label = isToday
+    ? 'Aujourd\'hui'
+    : d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long'});
+  const el = document.getElementById('dateLabel');
+  el.textContent = label;
+  el.className = 'dnav-label' + (isToday ? '' : ' past');
+  document.getElementById('nextBtn').disabled = isToday;
+}
+
+function prevDay() {
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate()-1);
+  currentDate = d.toISOString().split('T')[0];
+  loadDay();
+}
+
+function nextDay() {
+  if (currentDate >= date()) return;
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate()+1);
+  currentDate = d.toISOString().split('T')[0];
+  loadDay();
+}
+
+async function loadDay() {
+  hs={}; ds={}; rs={}; note='';
+  tlog={}; lastEntry=null;
+  selCat=null; selMins=null;
+  renderDateNav();
+  renderHabits(); renderDeen(); renderRawatib(); renderXP();
+  renderCats(); renderDurs(); renderSummary();
+  document.getElementById('noteEl').value='';
+  document.getElementById('btnundo').disabled=true;
+  await Promise.all([loadHL(), loadTL()]);
+  renderHabits(); renderDeen(); renderRawatib(); renderXP();
+  renderSummary();
+}
+
 function fmt(m) {
   if(!m) return '0m';
   const h=Math.floor(m/60),r=m%60;
@@ -806,7 +889,7 @@ function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();pushHabits();
 let noteTimer;
 function saveNote(){
   note=document.getElementById('noteEl').value;
-  localStorage.setItem('hn_'+date(),note);
+  localStorage.setItem('hn_'+currentDate,note);
   clearTimeout(noteTimer);
   noteTimer=setTimeout(pushHabits, 1500);
 }
@@ -817,10 +900,10 @@ function toggleR(){
   t.classList.toggle('open',open);
 }
 
-function saveHL(){localStorage.setItem('hs_'+date(),JSON.stringify({hs,ds,rs}));}
+function saveHL(){localStorage.setItem('hs_'+currentDate,JSON.stringify({hs,ds,rs}));}
 
 async function loadHL(){
-  const d=date();
+  const d=currentDate;
   // Affichage immédiat depuis localStorage
   const raw=localStorage.getItem('hs_'+d);
   if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};}
@@ -848,7 +931,7 @@ let hPushBusy=false, hPushQueued=false;
 async function pushHabits(){
   if(hPushBusy){hPushQueued=true;return;}
   hPushBusy=true; sync('pending');
-  const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
+  const d=currentDate, done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
   const score=Math.round(done/HABITS.length*100);
   let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
@@ -954,10 +1037,10 @@ function undoLast(){
   document.getElementById('btnundo').disabled=true;
 }
 
-function saveTL(){localStorage.setItem('tl_'+date(),JSON.stringify({log:tlog}));}
+function saveTL(){localStorage.setItem('tl_'+currentDate,JSON.stringify({log:tlog}));}
 
 async function loadTL(){
-  const d=date();
+  const d=currentDate;
   const raw=localStorage.getItem('tl_'+d);
   if(raw){tlog=JSON.parse(raw).log||{};return;}
   try{
@@ -969,7 +1052,7 @@ async function loadTL(){
 async function pushTime(){
   if(pushBusy){pushQueued=true;return;}
   pushBusy=true;sync('pending');
-  const d=date();
+  const d=currentDate;
   const content=`## TIME FOCUS\n\n`+CATS.map(c=>`${c}:: ${tlog[c]||0}`).join('\n');
   const body=JSON.stringify({content,date:d,section:'TIME_FOCUS'});
   let ok=false;
@@ -987,6 +1070,8 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 async function init(){
+  currentDate = date();
+  renderDateNav();
   await Promise.all([loadHL(),loadTL()]);
   renderHabits();renderDeen();renderRawatib();renderXP();
   renderCats();renderDurs();renderSummary();
