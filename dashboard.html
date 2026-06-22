@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0f0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arnaud">
+<link rel="manifest" href="dashboard-manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Arnaud</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -100,11 +106,11 @@ nav {
 .res-stat-num { font-size:22px; font-weight:700; color:var(--text); }
 .res-stat-label { font-size:10px; color:var(--muted); margin-top:2px; letter-spacing:0.03em; }
 .heatmap-wrap { overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch; }
-.heatmap-grid { display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,12px); gap:3px; width:max-content; }
-.hm-cell { width:12px; height:12px; border-radius:3px; background:var(--bg3); cursor:default; }
-.hm-cell.empty { background:transparent; }
-.heatmap-legend { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:9px; color:var(--muted); }
-.heatmap-legend .hm-cell { width:10px; height:10px; }
+.heatmap-grid { display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,16px); gap:4px; width:max-content; padding:2px; }
+.hm-cell { width:16px; height:16px; border-radius:4px; background:var(--bg3); border:1px solid rgba(255,255,255,0.06); cursor:default; }
+.hm-cell.empty { background:transparent; border:none; }
+.heatmap-legend { display:flex; align-items:center; gap:7px; margin-top:12px; font-size:10px; color:var(--muted); }
+.heatmap-legend .hm-cell { width:13px; height:13px; }
 .res-loading { font-size:11px; color:var(--muted); padding:20px 0; text-align:center; }
 
 /* ── SCORES ── */
@@ -791,9 +797,9 @@ function renderResilience(){
     const score = resData[key];
     let bg = 'var(--bg3)';
     if(score!=null){
-      if(score>=80) bg = `rgba(34,197,94,${0.35+score/100*0.65})`;
-      else if(score>=50) bg = `rgba(245,158,11,${0.35+score/100*0.65})`;
-      else if(score>0) bg = `rgba(239,68,68,${0.35+score/100*0.65})`;
+      if(score>=80) bg = `rgba(34,197,94,${0.55+score/100*0.45})`;
+      else if(score>=50) bg = `rgba(245,158,11,${0.55+score/100*0.45})`;
+      else if(score>0) bg = `rgba(239,68,68,${0.55+score/100*0.45})`;
     }
     const label = score!=null ? `${key} — ${score}%` : `${key} — pas de donnée`;
     return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
@@ -839,6 +845,7 @@ function xpDeenMax() {
 function xpTotal(){ return xpDeen(); }
 
 function color(pct) {
+  if(pct<=0) return 'var(--muted)';
   return pct>=80?'var(--green)':pct>=50?'#f59e0b':'#ef4444';
 }
 
