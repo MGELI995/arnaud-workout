@@ -1,7 +1,7 @@
 {
   "id": "/arnaud-workout/dashboard.html",
-  "name": "Arnaud — Habits",
-  "short_name": "Arnaud",
+  "name": "Habits",
+  "short_name": "Habits",
   "description": "Suivi quotidien des habitudes, du Deen et de la résilience.",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
