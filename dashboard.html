@@ -608,7 +608,8 @@ const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev
 
 const HABITS = [
   { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30', weight:6 },
-  { id:'quran_20min',      name:'Coran 20 min',            desc:'Lecture ou écoute quotidienne' },
+  { id:'quran_15min',      name:'Coran 15 min',            desc:'Lecture ou écoute quotidienne' },
+  { id:'scapula',          name:'Scapula',                 desc:'Exercices cou et scapula' },
   { id:'family_contact',   name:'Contact famille',         desc:'Appel ou message' },
   { id:'supplements',      name:'Suppléments',             desc:'Créatine · D3 · Magnésium', max:3, xp:20 },
   { id:'english_15min',    name:'15 min anglais',          desc:'Podcast, manga, vocab Anki' },
@@ -743,12 +744,13 @@ clock(); setInterval(clock,10000);
 
 // ─── RÉSILIENCE (HEATMAP) ───
 const RES_DAYS = 90;
+const RES_START_DATE = '2026-06-23'; // la heatmap ne compte qu'à partir de cette date
 let resData = null;
 
 function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
 async function loadResilience(){
-  const cacheRaw = localStorage.getItem('res_cache');
+  const cacheRaw = localStorage.getItem('res_cache_v2');
   if(cacheRaw){
     try{
       const cache = JSON.parse(cacheRaw);
@@ -760,7 +762,7 @@ async function loadResilience(){
   const today = new Date();
   const dates = Array.from({length: RES_DAYS}, (_,i)=>{
     const d = new Date(today); d.setDate(d.getDate()-i); return fmtDate(d);
-  });
+  }).filter(d => d >= RES_START_DATE);
 
   const results = await Promise.all(dates.map(async d=>{
     try{
@@ -774,7 +776,7 @@ async function loadResilience(){
   }));
 
   resData = Object.fromEntries(results);
-  localStorage.setItem('res_cache', JSON.stringify({t:Date.now(), data:resData}));
+  localStorage.setItem('res_cache_v2', JSON.stringify({t:Date.now(), data:resData}));
   renderResilience();
 }
 
@@ -794,7 +796,7 @@ function renderResilience(){
   document.getElementById('resGrid').innerHTML = cells.map(d=>{
     if(!d) return '<div class="hm-cell empty"></div>';
     const key = fmtDate(d);
-    const score = resData[key];
+    const score = key >= RES_START_DATE ? resData[key] : null;
     let bg = 'var(--bg3)';
     if(score!=null){
       if(score>=80) bg = `rgba(34,197,94,${0.55+score/100*0.45})`;
