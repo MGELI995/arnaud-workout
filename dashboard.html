@@ -94,6 +94,19 @@ nav {
 .tab.active { color: var(--text); }
 .tab.active svg { opacity: 1; }
 
+/* ── RESILIENCE HEATMAP ── */
+.res-summary { display:flex; gap:20px; padding:14px 0 18px; }
+.res-stat { flex:1; }
+.res-stat-num { font-size:22px; font-weight:700; color:var(--text); }
+.res-stat-label { font-size:10px; color:var(--muted); margin-top:2px; letter-spacing:0.03em; }
+.heatmap-wrap { overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch; }
+.heatmap-grid { display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,12px); gap:3px; width:max-content; }
+.hm-cell { width:12px; height:12px; border-radius:3px; background:var(--bg3); cursor:default; }
+.hm-cell.empty { background:transparent; }
+.heatmap-legend { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:9px; color:var(--muted); }
+.heatmap-legend .hm-cell { width:10px; height:10px; }
+.res-loading { font-size:11px; color:var(--muted); padding:20px 0; text-align:center; }
+
 /* ── SCORES ── */
 .scores-wrap {
   display: flex;
@@ -572,6 +585,38 @@ nav {
 </div>
 </div>
 
+<!-- ═══════════ RÉSILIENCE ═══════════ -->
+<div class="view" id="v-resilience">
+<div class="content">
+
+  <div class="res-summary">
+    <div class="res-stat">
+      <div class="res-stat-num" id="resStreak">—</div>
+      <div class="res-stat-label">Streak actuel (jours ≥50%)</div>
+    </div>
+    <div class="res-stat">
+      <div class="res-stat-num" id="resAvg">—</div>
+      <div class="res-stat-label">Moyenne 90 jours</div>
+    </div>
+  </div>
+
+  <div class="section">12 dernières semaines</div>
+  <div class="heatmap-wrap">
+    <div class="heatmap-grid" id="resGrid"><div class="res-loading">Chargement…</div></div>
+  </div>
+  <div class="heatmap-legend">
+    <span>Moins</span>
+    <div class="hm-cell" style="background:var(--bg3)"></div>
+    <div class="hm-cell" style="background:rgba(239,68,68,0.55)"></div>
+    <div class="hm-cell" style="background:rgba(245,158,11,0.55)"></div>
+    <div class="hm-cell" style="background:rgba(34,197,94,0.55)"></div>
+    <div class="hm-cell" style="background:rgba(34,197,94,1)"></div>
+    <span>Plus</span>
+  </div>
+
+</div>
+</div>
+
 <!-- NAV -->
 <nav>
   <button class="tab active" id="tab-habits" onclick="switchTab('habits')">
@@ -585,6 +630,12 @@ nav {
       <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
     </svg>
     Time
+  </button>
+  <button class="tab" id="tab-resilience" onclick="switchTab('resilience')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Résilience
   </button>
 </nav>
 
@@ -610,7 +661,6 @@ const HABITS = [
   { id:'english_15min',    name:'15 min anglais',          desc:'Podcast, manga, vocab Anki' },
   { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement' },
   { id:'no_music',         name:'Pas de musique',          desc:'Silence et dhikr — tranquillité d\'esprit' },
-  { id:'kcal_2500',        name:'≤ 2500 kcal / 150g P+',  desc:'Plafond calories · Objectif protéines', max:2, xp:15 },
   { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum' },
 ];
 
@@ -759,6 +809,84 @@ function switchTab(t) {
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('v-'+t).classList.add('active');
   document.getElementById('tab-'+t).classList.add('active');
+  if(t==='resilience') loadResilience();
+}
+
+// ─── RÉSILIENCE (HEATMAP) ───
+const RES_DAYS = 90;
+let resData = null;
+
+function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+async function loadResilience(){
+  const cacheRaw = localStorage.getItem('res_cache');
+  if(cacheRaw){
+    try{
+      const cache = JSON.parse(cacheRaw);
+      if(Date.now() - cache.t < 6*3600*1000){ resData = cache.data; renderResilience(); return; }
+      resData = cache.data; renderResilience(); // affichage immédiat, refresh en fond
+    }catch(e){}
+  }
+
+  const today = new Date();
+  const dates = Array.from({length: RES_DAYS}, (_,i)=>{
+    const d = new Date(today); d.setDate(d.getDate()-i); return fmtDate(d);
+  });
+
+  const results = await Promise.all(dates.map(async d=>{
+    try{
+      const r = await fetch(WORKER+'?date='+d+'&section=HABITS');
+      if(!r.ok) return [d, null];
+      const {text} = await r.json();
+      if(!text) return [d, null];
+      const m = text.match(/\*\*Score : (\d+)%/);
+      return [d, m ? parseInt(m[1]) : null];
+    }catch(e){ return [d, null]; }
+  }));
+
+  resData = Object.fromEntries(results);
+  localStorage.setItem('res_cache', JSON.stringify({t:Date.now(), data:resData}));
+  renderResilience();
+}
+
+function renderResilience(){
+  if(!resData) return;
+  const today = new Date();
+  const dates = Array.from({length: RES_DAYS}, (_,i)=>{
+    const d = new Date(today); d.setDate(d.getDate()-(RES_DAYS-1-i)); return d;
+  });
+
+  // Padding pour aligner le 1er jour sur sa colonne (semaine commence lundi)
+  const firstDow = (dates[0].getDay()+6)%7; // 0=lundi
+  const cells = [];
+  for(let i=0;i<firstDow;i++) cells.push(null);
+  dates.forEach(d=>cells.push(d));
+
+  document.getElementById('resGrid').innerHTML = cells.map(d=>{
+    if(!d) return '<div class="hm-cell empty"></div>';
+    const key = fmtDate(d);
+    const score = resData[key];
+    let bg = 'var(--bg3)';
+    if(score!=null){
+      if(score>=80) bg = `rgba(34,197,94,${0.35+score/100*0.65})`;
+      else if(score>=50) bg = `rgba(245,158,11,${0.35+score/100*0.65})`;
+      else if(score>0) bg = `rgba(239,68,68,${0.35+score/100*0.65})`;
+    }
+    const label = score!=null ? `${key} — ${score}%` : `${key} — pas de donnée`;
+    return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
+  }).join('');
+
+  const scores = Object.values(resData).filter(s=>s!=null);
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  document.getElementById('resAvg').textContent = scores.length ? avg+'%' : '—';
+
+  let streak = 0;
+  for(let i=0;i<RES_DAYS;i++){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const s = resData[fmtDate(d)];
+    if(s!=null && s>=50) streak++; else break;
+  }
+  document.getElementById('resStreak').textContent = streak;
 }
 
 // ─── HABITS ───
