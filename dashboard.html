@@ -558,37 +558,6 @@ nav {
     <textarea class="note" id="noteEl" placeholder="Note libre…" oninput="saveNote()"></textarea>
   </div>
 
-
-</div>
-</div>
-
-<!-- ═══════════ TIME ═══════════ -->
-<div class="view" id="v-time">
-<div class="content">
-
-  <div class="section" style="padding-top:12px">Aujourd'hui</div>
-  <div class="t-summary" id="tsummary">
-    <div class="t-empty">Aucune session enregistrée</div>
-  </div>
-
-  <div class="section">Catégorie</div>
-  <div class="cgrid" id="cgrid"></div>
-
-  <div class="section">Durée</div>
-  <div class="dgrid" id="dgrid"></div>
-
-  <div class="t-actions">
-    <button class="btnadd" id="btnadd" onclick="addTime()" disabled>Ajouter</button>
-    <button class="btnundo" id="btnundo" onclick="undoLast()" disabled>↩</button>
-  </div>
-
-</div>
-</div>
-
-<!-- ═══════════ RÉSILIENCE ═══════════ -->
-<div class="view" id="v-resilience">
-<div class="content">
-
   <div class="res-summary">
     <div class="res-stat">
       <div class="res-stat-num" id="resStreak">—</div>
@@ -600,7 +569,7 @@ nav {
     </div>
   </div>
 
-  <div class="section">12 dernières semaines</div>
+  <div class="section">Résilience — 12 dernières semaines</div>
   <div class="heatmap-wrap">
     <div class="heatmap-grid" id="resGrid"><div class="res-loading">Chargement…</div></div>
   </div>
@@ -616,28 +585,6 @@ nav {
 
 </div>
 </div>
-
-<!-- NAV -->
-<nav>
-  <button class="tab active" id="tab-habits" onclick="switchTab('habits')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-    </svg>
-    Habits
-  </button>
-  <button class="tab" id="tab-time" onclick="switchTab('time')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-    </svg>
-    Time
-  </button>
-  <button class="tab" id="tab-resilience" onclick="switchTab('resilience')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-    Résilience
-  </button>
-</nav>
 
 <!-- OVERLAY -->
 <div class="overlay" id="overlay">
@@ -723,14 +670,9 @@ const CARDS = {
   ]},
 };
 
-const CATS = ['CORAN','ARABIC','BJJ','PODCAST','DEV','MASJID','ISLAMIC FINANCE','BOOK','FINANCE','ISLAM','ANGLAIS','GYM'];
-const DURS = [15, 30, 45, 60, 90, 120];
-
 const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
 
 let hs={}, ds={}, rs={}, note='';
-let tlog={}, lastEntry=null, selCat=null, selMins=null;
-let pushBusy=false, pushQueued=false;
 let hPushBusy2=false, hPushQueued2=false;
 
 let currentDate = '';
@@ -770,22 +712,11 @@ function nextDay() {
 
 async function loadDay() {
   hs={}; ds={}; rs={}; note='';
-  tlog={}; lastEntry=null;
-  selCat=null; selMins=null;
   renderDateNav();
   renderHabits(); renderDeen(); renderRawatib(); renderXP();
-  renderCats(); renderDurs(); renderSummary();
   document.getElementById('noteEl').value='';
-  document.getElementById('btnundo').disabled=true;
-  await Promise.all([loadHL(), loadTL()]);
+  await loadHL();
   renderHabits(); renderDeen(); renderRawatib(); renderXP();
-  renderSummary();
-}
-
-function fmt(m) {
-  if(!m) return '0m';
-  const h=Math.floor(m/60),r=m%60;
-  return h?(r?`${h}h${r}m`:`${h}h`):`${m}m`;
 }
 
 let toastT;
@@ -803,14 +734,6 @@ function clock() {
     String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
 }
 clock(); setInterval(clock,10000);
-
-function switchTab(t) {
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('v-'+t).classList.add('active');
-  document.getElementById('tab-'+t).classList.add('active');
-  if(t==='resilience') loadResilience();
-}
 
 // ─── RÉSILIENCE (HEATMAP) ───
 const RES_DAYS = 90;
@@ -1115,95 +1038,12 @@ async function saveHabits(){
   setTimeout(()=>{btn.textContent='Sauvegarder';btn.classList.remove('success');},2500);
 }
 
-// ─── TIME ───
-function renderSummary(){
-  const entries=CATS.filter(c=>tlog[c]>0);
-  if(!entries.length){document.getElementById('tsummary').innerHTML='<div class="t-empty">Aucune session enregistrée</div>';return;}
-  const total=entries.reduce((a,c)=>a+(tlog[c]||0),0);
-  document.getElementById('tsummary').innerHTML=
-    entries.map(c=>`<div class="trow"><span class="tcat">${c}</span><span class="tval">${fmt(tlog[c])}</span></div>`).join('')
-    +`<div class="trow total"><span class="tcat">Total</span><span class="tval">${fmt(total)}</span></div>`;
-}
-
-function renderCats(){
-  document.getElementById('cgrid').innerHTML=CATS.map(c=>
-    `<button class="cbtn ${selCat===c?'sel':''}" onclick="selC('${c}')">${c}</button>`
-  ).join('');
-}
-
-function renderDurs(){
-  document.getElementById('dgrid').innerHTML=DURS.map(d=>
-    `<button class="dbtn ${selMins===d?'sel':''}" onclick="selD(${d})">${fmt(d)}</button>`
-  ).join('');
-}
-
-function selC(c){selCat=selCat===c?null:c;renderCats();checkAdd();}
-function selD(d){selMins=selMins===d?null:d;renderDurs();checkAdd();}
-function checkAdd(){
-  const btn=document.getElementById('btnadd');
-  const ready=!!(selCat&&selMins);
-  btn.disabled=!ready;
-  btn.classList.toggle('ready',ready);
-}
-
-function addTime(){
-  if(!selCat||!selMins)return;
-  lastEntry={cat:selCat,mins:selMins};
-  tlog[selCat]=(tlog[selCat]||0)+selMins;
-  saveTL(); pushTime();
-  toast(`+${fmt(selMins)} ${selCat}`);
-  renderSummary();
-  document.getElementById('btnundo').disabled=false;
-  selCat=null;selMins=null;renderCats();renderDurs();checkAdd();
-}
-
-function undoLast(){
-  if(!lastEntry)return;
-  tlog[lastEntry.cat]=Math.max(0,(tlog[lastEntry.cat]||0)-lastEntry.mins);
-  if(!tlog[lastEntry.cat])delete tlog[lastEntry.cat];
-  toast(`↩ -${fmt(lastEntry.mins)} ${lastEntry.cat}`);
-  lastEntry=null;saveTL();pushTime();renderSummary();
-  document.getElementById('btnundo').disabled=true;
-}
-
-function saveTL(){localStorage.setItem('tl_'+currentDate,JSON.stringify({log:tlog}));}
-
-async function loadTL(){
-  const d=currentDate;
-  const raw=localStorage.getItem('tl_'+d);
-  if(raw){tlog=JSON.parse(raw).log||{};return;}
-  try{
-    const r=await fetch(WORKER+'?date='+d+'&section=TIME_FOCUS');
-    if(r.ok){const {text}=await r.json();if(text){text.split('\n').forEach(l=>{const m=l.match(/^([A-Z ]+)::\s*(\d+)/);if(m)tlog[m[1].trim()]=parseInt(m[2])||0;});saveTL();}}
-  }catch(e){}
-}
-
-async function pushTime(){
-  if(pushBusy){pushQueued=true;return;}
-  pushBusy=true;sync('pending');
-  const d=currentDate;
-  const content=`## TIME FOCUS\n\n`+CATS.map(c=>`${c}:: ${tlog[c]||0}`).join('\n');
-  const body=JSON.stringify({content,date:d,section:'TIME_FOCUS'});
-  let ok=false;
-  for(let i=0;i<3;i++){
-    try{const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body});if(r.ok){ok=true;break};}catch(e){}
-    if(i<2)await new Promise(r=>setTimeout(r,1500*(i+1)));
-  }
-  sync(ok?'ok':'error');
-  pushBusy=false;
-  if(pushQueued){pushQueued=false;pushTime();}
-}
-
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden&&Object.keys(tlog).length>0)pushTime();
-});
-
 async function init(){
   currentDate = date();
   renderDateNav();
-  await Promise.all([loadHL(),loadTL()]);
+  await loadHL();
   renderHabits();renderDeen();renderRawatib();renderXP();
-  renderCats();renderDurs();renderSummary();
+  loadResilience();
 }
 init();
 </script>
