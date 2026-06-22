@@ -1053,6 +1053,12 @@ async function init(){
   loadResilience();
 }
 init();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./dashboard-sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
