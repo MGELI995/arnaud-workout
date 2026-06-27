@@ -488,6 +488,57 @@ nav {
 .card-ctx em { font-style: italic; color: #aaa; }
 .card-ctx strong { color: var(--text); font-weight: 500; }
 
+/* ── VOYAGE BTN ── */
+.voyage-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; padding: 2px 4px; border-radius: 6px;
+  opacity: 0.5; transition: opacity 0.2s, background 0.2s;
+  line-height: 1;
+}
+.voyage-btn:active { background: var(--bg2); }
+.voyage-btn.active { opacity: 1; }
+
+/* ── VOYAGE BANNER ── */
+.voyage-banner {
+  display: none;
+  background: rgba(59,130,246,0.12);
+  border-bottom: 1px solid rgba(59,130,246,0.25);
+  text-align: center;
+  font-size: 11px;
+  color: #60a5fa;
+  font-weight: 500;
+  padding: 5px 0;
+  letter-spacing: 0.05em;
+}
+.voyage-banner.active { display: block; }
+
+/* ── VOYAGE MODAL ── */
+.voy-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+.voy-overlay.show { display: flex; }
+.voy-modal {
+  background: var(--bg2); border: 1px solid var(--bg3);
+  border-radius: 16px; padding: 28px 24px 20px;
+  max-width: 300px; width: 90%; text-align: center;
+}
+.voy-icon { font-size: 32px; margin-bottom: 12px; }
+.voy-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.voy-msg { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.voy-btns { display: flex; gap: 10px; }
+.voy-cancel {
+  flex: 1; height: 40px; background: none; border: 1px solid var(--bg3);
+  border-radius: 10px; color: var(--muted); font-family: var(--font);
+  font-size: 13px; cursor: pointer;
+}
+.voy-confirm {
+  flex: 1; height: 40px; background: #3b82f6; border: none;
+  border-radius: 10px; color: #fff; font-family: var(--font);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
 /* ── TOAST ── */
 .toast {
   position: fixed;
@@ -515,9 +566,24 @@ nav {
   <span class="h-name">Arnaud</span>
   <div class="h-right">
     <span id="clock"></span>
+    <button class="voyage-btn" id="voyageBtn" onclick="askVoyage()" title="Mode Voyage">✈️</button>
     <span class="sdot" id="sdot"></span>
   </div>
 </header>
+
+<!-- Mode Voyage confirm -->
+<div class="voy-overlay" id="voyOverlay">
+  <div class="voy-modal">
+    <div class="voy-icon">✈️</div>
+    <div class="voy-title" id="voyTitle"></div>
+    <div class="voy-msg" id="voyMsg"></div>
+    <div class="voy-btns">
+      <button class="voy-cancel" onclick="closeVoy()">Annuler</button>
+      <button class="voy-confirm" id="voyConfirm" onclick="confirmVoyage()"></button>
+    </div>
+  </div>
+</div>
+<div class="voyage-banner" id="voyBanner">✈️ MODE VOYAGE — Piliers uniquement</div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="prevDay()">←</button>
   <span class="dnav-label" id="dateLabel"></span>
@@ -846,15 +912,15 @@ function renderResilience(){
 
 // ─── HABITS ───
 function scoreJour() {
+  if(voyageMode) return scoreJourVoyage();
   let total=0, done=0;
   HABITS.forEach(h=>{
     const w=h.weight||1;
     total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
     if(val>0) done+=w;
-    else if(h.punitive) done-=w; // hifz: punitif si non coché
+    else if(h.punitive) done-=w;
   });
-  // Sport: bonus dans le numérateur seulement (non punitif)
   SPORT.forEach(s=>{ if(ss[s.id]) done+=s.bonus; });
   return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
@@ -879,7 +945,8 @@ function color(pct) {
 
 function renderXP() {
   const dounia = scoreJour();
-  const deenPct = Math.min(Math.round(xpDeen()/500*100), 100);
+  const xp = voyageMode ? xpDeenVoyage() : xpDeen();
+  const deenPct = Math.min(Math.round(xp/500*100), 100);
   const align = Math.round(deenPct*0.6 + dounia*0.4);
 
   const elA = document.getElementById('scoreAlign');
@@ -892,7 +959,8 @@ function renderXP() {
 }
 
 function renderHabits() {
-  document.getElementById('hlist').innerHTML=HABITS.map(h=>{
+  const list = voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
+  document.getElementById('hlist').innerHTML=list.map(h=>{
     if(h.max && h.max>1){
       const c=hs[h.id]||0, full=c>=h.max, partial=c>0&&!full;
       const cls=full?'full':partial?'partial':'';
@@ -913,7 +981,8 @@ function renderHabits() {
 }
 
 function renderDeen() {
-  document.getElementById('dlist').innerHTML=DEEN.map(d=>{
+  const list = voyageMode ? DEEN.filter(d=>VOYAGE_DEEN.includes(d.id)) : DEEN;
+  document.getElementById('dlist').innerHTML=list.map(d=>{
     const c=ds[d.id]||0, full=c>=d.max, partial=c>0&&!full;
     const cls=full?'full':partial?'partial':'';
     const lbl=full?CHECK_SVG:partial?c:'';
@@ -954,7 +1023,8 @@ function closeCard() {
 }
 
 function renderRawatib() {
-  document.getElementById('rlist').innerHTML=RAWATIB.map(r=>`
+  const list = voyageMode ? RAWATIB.filter(r=>VOYAGE_RAW.includes(r.id)) : RAWATIB;
+  document.getElementById('rlist').innerHTML=list.map(r=>`
     <div class="row ${rs[r.id]?'done':''}" onclick="tR('${r.id}')">
       <div class="circle">${rs[r.id]?CHECK_SVG:''}</div>
       <div class="ri">
@@ -979,6 +1049,60 @@ function saveNote(){
   localStorage.setItem('hn_'+currentDate,note);
   clearTimeout(noteTimer);
   noteTimer=setTimeout(pushHabits, 1500);
+}
+
+// ─── MODE VOYAGE ───
+const VOYAGE_HABITS = ['hifz_farj','quran_15min','eng_anki','steps_12k'];
+const VOYAGE_DEEN   = ['salah_waqt','adhkars','ayat_kursi'];
+const VOYAGE_RAW    = ['raw_witr'];
+
+let voyageMode = localStorage.getItem('voyage_mode') === '1';
+
+function applyVoyageUI(){
+  document.getElementById('voyBanner').classList.toggle('active', voyageMode);
+  document.getElementById('voyageBtn').classList.toggle('active', voyageMode);
+}
+
+function scoreJourVoyage(){
+  // Hifz punitif même en voyage
+  const items = HABITS.filter(h => VOYAGE_HABITS.includes(h.id));
+  let total=0, done=0;
+  items.forEach(h=>{
+    const w=h.weight||1; total+=w;
+    const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
+    if(val>0) done+=w;
+    else if(h.punitive) done-=w;
+  });
+  SPORT.forEach(s=>{ if(ss[s.id]) done+=s.bonus; });
+  return total>0?Math.min(100,Math.round(done/total*100)):0;
+}
+
+function xpDeenVoyage(){
+  let x=0;
+  DEEN.filter(d=>VOYAGE_DEEN.includes(d.id)).forEach(d=>{x+=(ds[d.id]||0)*d.xp;});
+  RAWATIB.filter(r=>VOYAGE_RAW.includes(r.id)).forEach(r=>{if(rs[r.id])x+=r.xp;});
+  return x;
+}
+
+function askVoyage(){
+  const entering = !voyageMode;
+  document.getElementById('voyTitle').textContent = entering ? 'Activer le Mode Voyage ?' : 'Quitter le Mode Voyage ?';
+  document.getElementById('voyMsg').textContent = entering
+    ? 'Le score sera calculé sur les piliers uniquement : Hifz, Coran 15min, Anki, 12K pas, Ṣalāh, Adhkārs, Āyat al-Kursī, Witr.'
+    : 'Retour au mode normal — tous les habits et items DEEN reprennent leur place.';
+  document.getElementById('voyConfirm').textContent = entering ? 'Activer' : 'Désactiver';
+  document.getElementById('voyOverlay').classList.add('show');
+}
+
+function closeVoy(){ document.getElementById('voyOverlay').classList.remove('show'); }
+
+function confirmVoyage(){
+  voyageMode = !voyageMode;
+  localStorage.setItem('voyage_mode', voyageMode ? '1' : '0');
+  closeVoy();
+  applyVoyageUI();
+  renderHabits(); renderDeen(); renderXP();
+  toast(voyageMode ? '✈️ Mode Voyage activé' : '🏠 Mode Normal activé');
 }
 
 function toggleR(){
@@ -1125,6 +1249,7 @@ async function saveHabits(){
 async function init(){
   currentDate = date();
   renderDateNav();
+  applyVoyageUI();
   await loadHL();
   renderHabits();renderDeen();renderRawatib();renderSport();renderXP();
   loadResilience();
