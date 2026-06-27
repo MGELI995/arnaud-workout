@@ -634,7 +634,7 @@ nav {
   </div>
 
   <div class="rt" id="sporttoggle" onclick="toggleSport()">
-    <span>Sport</span>
+    <span>Physique</span>
     <span class="rt-arrow">▶</span>
   </div>
   <div class="rbody" id="sportbody">
@@ -645,6 +645,11 @@ nav {
       <div class="hm-cell" style="background:rgba(34,197,94,0.85)"></div><span style="font-size:10px;color:var(--muted)">BJJ</span>
       <div class="hm-cell" style="background:rgba(59,130,246,0.85)"></div><span style="font-size:10px;color:var(--muted)">Muscu</span>
       <div class="hm-cell" style="background:rgba(168,85,247,0.9)"></div><span style="font-size:10px;color:var(--muted)">Les deux</span>
+    </div>
+    <div style="margin-top:6px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meals — 90 jours</div>
+    <div class="heatmap-wrap"><div class="heatmap-grid" id="cheatgrid"></div></div>
+    <div class="heatmap-legend" style="margin-bottom:8px">
+      <div class="hm-cell" style="background:rgba(239,68,68,0.7)"></div><span style="font-size:10px;color:var(--muted)">Cheat meal</span>
     </div>
   </div>
 
@@ -728,6 +733,7 @@ const DEEN = [
 const SPORT = [
   { id:'bjj',   name:'BJJ',   desc:'Séance ou drill',          bonus:2 },
   { id:'muscu', name:'Muscu', desc:'Séance de musculation',     bonus:2 },
+  { id:'cheat', name:'Cheat meal', desc:'Repas hors plan — tracking uniquement', bonus:0 },
 ];
 
 const RAWATIB = [
@@ -1128,12 +1134,16 @@ function toggleSport(){
 function tS(id){ss[id]=!ss[id];saveHL();renderSport();renderXP();pushHabits();}
 
 function renderSport(){
-  document.getElementById('sportlist').innerHTML=SPORT.map(s=>`
-    <div class="row ${ss[s.id]?'done':''}" onclick="tS('${s.id}')">
+  document.getElementById('sportlist').innerHTML=SPORT.map(s=>{
+    const tag = s.bonus>0
+      ? `<div style="font-size:10px;color:var(--muted);white-space:nowrap">+${s.bonus}pts</div>`
+      : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">tracker</div>`;
+    return `<div class="row ${ss[s.id]?'done':''}" onclick="tS('${s.id}')">
       <div class="circle">${ss[s.id]?CHECK_SVG:''}</div>
       <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
-      <div style="font-size:10px;color:var(--muted);white-space:nowrap">+${s.bonus}pts</div>
-    </div>`).join('');
+      ${tag}
+    </div>`;
+  }).join('');
   renderSportHeatmap();
 }
 
@@ -1149,18 +1159,29 @@ function renderSportHeatmap(){
     const d=new Date(today); d.setDate(d.getDate()-i);
     cells.push(d);
   }
-  document.getElementById('sportgrid').innerHTML=cells.map(d=>{
-    if(!d) return '<div class="hm-cell empty"></div>';
+  const parsed = cells.map(d=>{
+    if(!d) return null;
     const key=fmtDate(d);
     const raw=localStorage.getItem('hs_'+key);
-    let bjj=false,muscu=false;
-    if(raw){try{const p=JSON.parse(raw);bjj=!!(p.ss&&p.ss.bjj);muscu=!!(p.ss&&p.ss.muscu);}catch(e){}}
+    let bjj=false,muscu=false,cheat=false;
+    if(raw){try{const p=JSON.parse(raw);bjj=!!(p.ss&&p.ss.bjj);muscu=!!(p.ss&&p.ss.muscu);cheat=!!(p.ss&&p.ss.cheat);}catch(e){}}
+    return {d,key,bjj,muscu,cheat};
+  });
+
+  document.getElementById('sportgrid').innerHTML=parsed.map(p=>{
+    if(!p) return '<div class="hm-cell empty"></div>';
     let bg='var(--bg3)';
-    if(bjj&&muscu) bg='rgba(168,85,247,0.9)';
-    else if(bjj)   bg='rgba(34,197,94,0.85)';
-    else if(muscu) bg='rgba(59,130,246,0.85)';
-    const label=`${key}${bjj?' · BJJ':''}${muscu?' · Muscu':''}`;
+    if(p.bjj&&p.muscu) bg='rgba(168,85,247,0.9)';
+    else if(p.bjj)     bg='rgba(34,197,94,0.85)';
+    else if(p.muscu)   bg='rgba(59,130,246,0.85)';
+    const label=`${p.key}${p.bjj?' · BJJ':''}${p.muscu?' · Muscu':''}`;
     return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
+  }).join('');
+
+  document.getElementById('cheatgrid').innerHTML=parsed.map(p=>{
+    if(!p) return '<div class="hm-cell empty"></div>';
+    const bg=p.cheat?'rgba(239,68,68,0.7)':'var(--bg3)';
+    return `<div class="hm-cell" style="background:${bg}" title="${p.key}${p.cheat?' · Cheat meal':''}"></div>`;
   }).join('');
 }
 
