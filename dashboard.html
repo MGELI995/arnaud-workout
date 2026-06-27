@@ -622,6 +622,11 @@ nav {
   <div class="section">Quotidien</div>
   <div id="hlist"></div>
 
+  <div id="var-section" style="display:none">
+    <div class="section">Programme du jour</div>
+    <div id="vlist"></div>
+  </div>
+
   <div class="section">Deen</div>
   <div id="dlist"></div>
 
@@ -699,6 +704,17 @@ nav {
 
 <script>
 const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
+
+// 0=dim 1=lun 2=mar 3=mer 4=jeu 5=ven 6=sam
+const VARIABLE_HABITS = {
+  1: [
+    { id:'var_mr_najah',    name:'Cours Mr Najah',   desc:'Session de cours',              weight:2 },
+    { id:'var_deep_extra',  name:'Deep work +1h',    desc:'2h de deep work aujourd\'hui',  weight:2 },
+  ],
+  0: [
+    { id:'var_arabe',       name:'Cours arabe',      desc:'Session avec la prof — 1h30',   weight:3 },
+  ],
+};
 
 const HABITS = [
   { id:'wake_6h',           name:'Réveil 6h',               desc:'Ne pas se rendormir après Fajr',                   weight:2 },
@@ -925,10 +941,16 @@ function renderResilience(){
 }
 
 // ─── HABITS ───
+function todayVarHabits(){
+  const dow = new Date(currentDate+'T12:00:00').getDay();
+  return VARIABLE_HABITS[dow] || [];
+}
+
 function scoreJour() {
   if(voyageMode) return scoreJourVoyage();
   let total=0, done=0;
-  HABITS.forEach(h=>{
+  const allHabits = [...HABITS, ...todayVarHabits()];
+  allHabits.forEach(h=>{
     const w=h.weight||1;
     total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
@@ -972,26 +994,37 @@ function renderXP() {
   elQ.textContent = dounia+'%';  elQ.style.color = color(dounia);
 }
 
+function habitRow(h) {
+  if(h.max && h.max>1){
+    const c=hs[h.id]||0, full=c>=h.max, partial=c>0&&!full;
+    const cls=full?'full':partial?'partial':'';
+    const lbl=full?CHECK_SVG:partial?c:'';
+    const dots=`<div class="dots-wrap">${Array.from({length:h.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`;
+    return `<div class="drow ${cls}" onclick="tH('${h.id}')">
+      <div class="dcircle">${lbl}</div>
+      <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+      ${dots}
+    </div>`;
+  }
+  const done=!!hs[h.id];
+  return `<div class="row ${done?'done':''}" onclick="tH('${h.id}')">
+    <div class="circle">${done?CHECK_SVG:''}</div>
+    <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+  </div>`;
+}
+
 function renderHabits() {
   const list = voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
-  document.getElementById('hlist').innerHTML=list.map(h=>{
-    if(h.max && h.max>1){
-      const c=hs[h.id]||0, full=c>=h.max, partial=c>0&&!full;
-      const cls=full?'full':partial?'partial':'';
-      const lbl=full?CHECK_SVG:partial?c:'';
-      const dots=`<div class="dots-wrap">${Array.from({length:h.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`;
-      return `<div class="drow ${cls}" onclick="tH('${h.id}')">
-        <div class="dcircle">${lbl}</div>
-        <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
-        ${dots}
-      </div>`;
-    }
-    const done=!!hs[h.id];
-    return `<div class="row ${done?'done':''}" onclick="tH('${h.id}')">
-      <div class="circle">${done?CHECK_SVG:''}</div>
-      <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
-    </div>`;
-  }).join('');
+  document.getElementById('hlist').innerHTML = list.map(habitRow).join('');
+  const varList = voyageMode ? [] : todayVarHabits();
+  const varEl = document.getElementById('vlist');
+  const varSection = document.getElementById('var-section');
+  if(varList.length){
+    varEl.innerHTML = varList.map(habitRow).join('');
+    varSection.style.display = '';
+  } else {
+    varSection.style.display = 'none';
+  }
 }
 
 function renderDeen() {
@@ -1223,6 +1256,8 @@ async function pushHabits(){
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
   HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
+  const vh=todayVarHabits();
+  if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
   content+=`\n## DEEN\n\n`;
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
@@ -1251,6 +1286,8 @@ async function saveHabits(){
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
   HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
+  const vh=todayVarHabits();
+  if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
   content+=`\n## DEEN\n\n`;
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
