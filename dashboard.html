@@ -559,6 +559,21 @@ nav {
     <div id="rlist"></div>
   </div>
 
+  <div class="rt" id="sporttoggle" onclick="toggleSport()">
+    <span>Sport</span>
+    <span class="rt-arrow">▶</span>
+  </div>
+  <div class="rbody" id="sportbody">
+    <div id="sportlist"></div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Entraînements — 90 jours</div>
+    <div class="heatmap-wrap"><div class="heatmap-grid" id="sportgrid"></div></div>
+    <div class="heatmap-legend" style="margin-bottom:8px">
+      <div class="hm-cell" style="background:rgba(34,197,94,0.85)"></div><span style="font-size:10px;color:var(--muted)">BJJ</span>
+      <div class="hm-cell" style="background:rgba(59,130,246,0.85)"></div><span style="font-size:10px;color:var(--muted)">Muscu</span>
+      <div class="hm-cell" style="background:rgba(168,85,247,0.9)"></div><span style="font-size:10px;color:var(--muted)">Les deux</span>
+    </div>
+  </div>
+
   <div class="section">Note du jour</div>
   <div class="note-wrap">
     <textarea class="note" id="noteEl" placeholder="Note libre…" oninput="saveNote()"></textarea>
@@ -608,7 +623,7 @@ const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev
 
 const HABITS = [
   { id:'wake_6h',           name:'Réveil 6h',               desc:'Ne pas se rendormir après Fajr',                   weight:2 },
-  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30',          weight:3 },
+  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30',          weight:3, punitive:true },
   { id:'quran_15min',      name:'Coran 15 min',            desc:'Lecture ou écoute quotidienne',                    weight:3 },
   { id:'scapula',          name:'Scapula',                 desc:'Exercices cou et scapula',                         weight:3 },
   { id:'family_contact',   name:'Contact famille',         desc:'Appel ou message',                                 weight:2 },
@@ -634,6 +649,11 @@ const DEEN = [
   { id:'sadaqa',        name:'Ṣadaqa du jour',           desc:'Aumône · même symbolique',                   max:1, xp:45  },
   { id:'tahajjud',      name:'Tahajjud',                  desc:'Prière de nuit — dernier tiers',             max:1, xp:110 },
   { id:'tawbah',        name:'Tawbah — repentir',        desc:'Istighfār sincère · 3 minutes',              max:1, xp:40  },
+];
+
+const SPORT = [
+  { id:'bjj',   name:'BJJ',   desc:'Séance ou drill',          bonus:2 },
+  { id:'muscu', name:'Muscu', desc:'Séance de musculation',     bonus:2 },
 ];
 
 const RAWATIB = [
@@ -683,7 +703,7 @@ const CARDS = {
 
 const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
 
-let hs={}, ds={}, rs={}, note='';
+let hs={}, ds={}, rs={}, ss={}, note='';
 let hPushBusy2=false, hPushQueued2=false;
 
 let currentDate = '';
@@ -724,10 +744,10 @@ function nextDay() {
 async function loadDay() {
   hs={}; ds={}; rs={}; note='';
   renderDateNav();
-  renderHabits(); renderDeen(); renderRawatib(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderSport(); renderXP();
   document.getElementById('noteEl').value='';
   await loadHL();
-  renderHabits(); renderDeen(); renderRawatib(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderSport(); renderXP();
 }
 
 let toastT;
@@ -826,15 +846,17 @@ function renderResilience(){
 
 // ─── HABITS ───
 function scoreJour() {
-  // Ḥifẓ al-farj = weight:6, autres = weight:1 (multi-coches = 1 si ≥1)
   let total=0, done=0;
   HABITS.forEach(h=>{
     const w=h.weight||1;
     total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
     if(val>0) done+=w;
+    else if(h.punitive) done-=w; // hifz: punitif si non coché
   });
-  return total>0?Math.round(done/total*100):0;
+  // Sport: bonus dans le numérateur seulement (non punitif)
+  SPORT.forEach(s=>{ if(ss[s.id]) done+=s.bonus; });
+  return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
 
 function xpDeen() {
@@ -965,13 +987,58 @@ function toggleR(){
   t.classList.toggle('open',open);
 }
 
-function saveHL(){localStorage.setItem('hs_'+currentDate,JSON.stringify({hs,ds,rs}));}
+function toggleSport(){
+  const b=document.getElementById('sportbody'),t=document.getElementById('sporttoggle');
+  const open=b.classList.toggle('open');
+  t.classList.toggle('open',open);
+}
+
+function tS(id){ss[id]=!ss[id];saveHL();renderSport();renderXP();pushHabits();}
+
+function renderSport(){
+  document.getElementById('sportlist').innerHTML=SPORT.map(s=>`
+    <div class="row ${ss[s.id]?'done':''}" onclick="tS('${s.id}')">
+      <div class="circle">${ss[s.id]?CHECK_SVG:''}</div>
+      <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
+      <div style="font-size:10px;color:var(--muted);white-space:nowrap">+${s.bonus}pts</div>
+    </div>`).join('');
+  renderSportHeatmap();
+}
+
+function renderSportHeatmap(){
+  const today = new Date();
+  const days = 90;
+  const cells = [];
+  // padding lundi
+  const firstDay = new Date(today); firstDay.setDate(firstDay.getDate()-(days-1));
+  const firstDow = (firstDay.getDay()+6)%7;
+  for(let i=0;i<firstDow;i++) cells.push(null);
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    cells.push(d);
+  }
+  document.getElementById('sportgrid').innerHTML=cells.map(d=>{
+    if(!d) return '<div class="hm-cell empty"></div>';
+    const key=fmtDate(d);
+    const raw=localStorage.getItem('hs_'+key);
+    let bjj=false,muscu=false;
+    if(raw){try{const p=JSON.parse(raw);bjj=!!(p.ss&&p.ss.bjj);muscu=!!(p.ss&&p.ss.muscu);}catch(e){}}
+    let bg='var(--bg3)';
+    if(bjj&&muscu) bg='rgba(168,85,247,0.9)';
+    else if(bjj)   bg='rgba(34,197,94,0.85)';
+    else if(muscu) bg='rgba(59,130,246,0.85)';
+    const label=`${key}${bjj?' · BJJ':''}${muscu?' · Muscu':''}`;
+    return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
+  }).join('');
+}
+
+function saveHL(){localStorage.setItem('hs_'+currentDate,JSON.stringify({hs,ds,rs,ss}));}
 
 async function loadHL(){
   const d=currentDate;
   // Affichage immédiat depuis localStorage
   const raw=localStorage.getItem('hs_'+d);
-  if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};}
+  if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};ss=p.ss||{};}
   // Toujours fetch GitHub pour sync multi-appareils
   try{
     const r=await fetch(WORKER+'?date='+d+'&section=HABITS&t='+Date.now());
@@ -981,7 +1048,7 @@ async function loadHL(){
         const m=text.match(/<!-- STATE:(.*?) -->/);
         if(m){
           const p=JSON.parse(m[1]);
-          hs=p.hs||{}; ds=p.ds||{}; rs=p.rs||{};
+          hs=p.hs||{}; ds=p.ds||{}; rs=p.rs||{}; ss=p.ss||{};
           saveHL();
           renderHabits(); renderDeen(); renderRawatib(); renderXP();
         }
@@ -997,7 +1064,8 @@ async function pushHabits(){
   if(hPushBusy){hPushQueued=true;return;}
   hPushBusy=true; sync('pending');
   const d=currentDate, done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
-  const score=Math.round(done/HABITS.length*100);
+  const score=scoreJour();
+  const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
   let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
@@ -1006,11 +1074,12 @@ async function pushHabits(){
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
   if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
+  if(sportDone){content+=`\n## Sport\n\n- 🏋️ ${sportDone}\n`;}
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
   content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
-  content+=`<!-- STATE:${JSON.stringify({hs,ds,rs})} -->`;
+  content+=`<!-- STATE:${JSON.stringify({hs,ds,rs,ss})} -->`;
   const body=JSON.stringify({content,date:d,section:'HABITS'});
   let ok=false;
   for(let i=0;i<3;i++){
@@ -1023,7 +1092,8 @@ async function pushHabits(){
 
 async function saveHabits(){
   const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpTotal();
-  const score=Math.round(done/HABITS.length*100);
+  const score=scoreJour();
+  const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
   let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
@@ -1032,6 +1102,7 @@ async function saveHabits(){
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
   if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
+  if(sportDone){content+=`\n## Sport\n\n- 🏋️ ${sportDone}\n`;}
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-xp} XP manquants\n`;
@@ -1055,7 +1126,7 @@ async function init(){
   currentDate = date();
   renderDateNav();
   await loadHL();
-  renderHabits();renderDeen();renderRawatib();renderXP();
+  renderHabits();renderDeen();renderRawatib();renderSport();renderXP();
   loadResilience();
 }
 init();
