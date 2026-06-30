@@ -592,9 +592,11 @@ nav {
   </div>
 </div>
 <div class="voyage-banner" id="voyBanner">✈️ MODE VOYAGE — Piliers uniquement</div>
+<div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">🤒 JOUR MALADE — système neutralisé</div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="prevDay()">←</button>
   <span class="dnav-label" id="dateLabel"></span>
+  <button class="dnav-btn" onclick="toggleSick()" title="Jour malade" style="font-size:13px">🤒</button>
   <button class="dnav-btn" id="nextBtn" onclick="nextDay()">→</button>
 </div>
 
@@ -870,7 +872,7 @@ let resData = null;
 function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
 async function loadResilience(){
-  const cacheRaw = localStorage.getItem('res_cache_v2');
+  const cacheRaw = localStorage.getItem('res_cache_v3');
   if(cacheRaw){
     try{
       const cache = JSON.parse(cacheRaw);
@@ -890,13 +892,14 @@ async function loadResilience(){
       if(!r.ok) return [d, null];
       const {text} = await r.json();
       if(!text) return [d, null];
+      if(/\*\*MALADE: OUI\*\*/.test(text)) return [d, {sick:true}];
       const m = text.match(/\*\*Score : (\d+)%/);
-      return [d, m ? parseInt(m[1]) : null];
+      return [d, m ? {s:parseInt(m[1])} : null];
     }catch(e){ return [d, null]; }
   }));
 
   resData = Object.fromEntries(results);
-  localStorage.setItem('res_cache_v2', JSON.stringify({t:Date.now(), data:resData}));
+  localStorage.setItem('res_cache_v3', JSON.stringify({t:Date.now(), data:resData}));
   renderResilience();
 }
 
@@ -916,26 +919,30 @@ function renderResilience(){
   document.getElementById('resGrid').innerHTML = cells.map(d=>{
     if(!d) return '<div class="hm-cell empty"></div>';
     const key = fmtDate(d);
-    const score = key >= RES_START_DATE ? resData[key] : null;
-    let bg = 'var(--bg3)';
-    if(score!=null){
+    const entry = key >= RES_START_DATE ? resData[key] : null;
+    let bg = 'var(--bg3)', label = `${key} — pas de donnée`;
+    if(entry && entry.sick){
+      bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 malade`;
+    } else if(entry && entry.s!=null){
+      const score = entry.s;
       if(score>=80) bg = `rgba(34,197,94,${0.55+score/100*0.45})`;
       else if(score>=50) bg = `rgba(245,158,11,${0.55+score/100*0.45})`;
       else if(score>0) bg = `rgba(239,68,68,${0.55+score/100*0.45})`;
+      label = `${key} — ${score}%`;
     }
-    const label = score!=null ? `${key} — ${score}%` : `${key} — pas de donnée`;
     return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
   }).join('');
 
-  const scores = Object.values(resData).filter(s=>s!=null);
+  const scores = Object.values(resData).filter(e=>e && !e.sick && e.s!=null).map(e=>e.s);
   const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
   document.getElementById('resAvg').textContent = scores.length ? avg+'%' : '—';
 
   let streak = 0;
   for(let i=0;i<RES_DAYS;i++){
     const d = new Date(today); d.setDate(d.getDate()-i);
-    const s = resData[fmtDate(d)];
-    if(s!=null && s>=50) streak++; else break;
+    const e = resData[fmtDate(d)];
+    if(e && e.sick) continue; // neutre, ne casse pas le streak
+    if(e && e.s!=null && e.s>=50) streak++; else break;
   }
   document.getElementById('resStreak').textContent = streak;
 }
@@ -946,7 +953,19 @@ function todayVarHabits(){
   return VARIABLE_HABITS[dow] || [];
 }
 
+function isSickDay(){ return localStorage.getItem('sick_'+currentDate) === '1'; }
+
+function toggleSick(){
+  const sick = !isSickDay();
+  localStorage.setItem('sick_'+currentDate, sick ? '1' : '0');
+  document.getElementById('sickBanner').classList.toggle('active', sick);
+  toast(sick ? '🤒 Jour marqué malade' : 'Jour normal rétabli');
+  renderXP();
+  pushHabits();
+}
+
 function scoreJour() {
+  if(isSickDay()) return null;
   if(voyageMode) return scoreJourVoyage();
   let total=0, done=0;
   const allHabits = [...HABITS, ...todayVarHabits()];
@@ -980,14 +999,22 @@ function color(pct) {
 }
 
 function renderXP() {
+  document.getElementById('sickBanner').classList.toggle('active', isSickDay());
+  const elA = document.getElementById('scoreAlign');
+  const elD = document.getElementById('scoreDeen');
+  const elQ = document.getElementById('scoreDounia');
+
+  if(isSickDay()){
+    elA.textContent='—'; elA.style.color='var(--muted)';
+    elD.textContent='—'; elD.style.color='var(--muted)';
+    elQ.textContent='—'; elQ.style.color='var(--muted)';
+    return;
+  }
+
   const dounia = scoreJour();
   const xp = voyageMode ? xpDeenVoyage() : xpDeen();
   const deenPct = Math.min(Math.round(xp/500*100), 100);
   const align = Math.round(deenPct*0.6 + dounia*0.4);
-
-  const elA = document.getElementById('scoreAlign');
-  const elD = document.getElementById('scoreDeen');
-  const elQ = document.getElementById('scoreDounia');
 
   elA.textContent = align+'%';   elA.style.color = color(align);
   elD.textContent = deenPct+'%'; elD.style.color = color(deenPct);
@@ -1250,9 +1277,12 @@ async function pushHabits(){
   if(hPushBusy){hPushQueued=true;return;}
   hPushBusy=true; sync('pending');
   const d=currentDate, done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
+  const sick=isSickDay();
   const score=scoreJour();
   const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
-  let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
+  let content=sick
+    ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
+    : `# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
   HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
@@ -1280,9 +1310,12 @@ async function pushHabits(){
 
 async function saveHabits(){
   const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpTotal();
+  const sick=isSickDay();
   const score=scoreJour();
   const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
-  let content=`# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
+  let content=sick
+    ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
+    : `# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
   HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
