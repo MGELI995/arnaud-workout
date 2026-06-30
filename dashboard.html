@@ -592,12 +592,26 @@ nav {
   </div>
 </div>
 <div class="voyage-banner" id="voyBanner">✈️ MODE VOYAGE — Piliers uniquement</div>
-<div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">🤒 JOUR MALADE — système neutralisé</div>
+<div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">JOUR MALADE — système neutralisé</div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="prevDay()">←</button>
   <span class="dnav-label" id="dateLabel"></span>
-  <button class="dnav-btn" onclick="toggleSick()" title="Jour malade" style="font-size:13px">🤒</button>
+  <button class="dnav-btn" onclick="askSick()" title="Jour malade" style="opacity:0.35">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v8M8 6h8M6 14h12a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z"/></svg>
+  </button>
   <button class="dnav-btn" id="nextBtn" onclick="nextDay()">→</button>
+</div>
+
+<!-- Jour malade confirm -->
+<div class="voy-overlay" id="sickOverlay">
+  <div class="voy-modal">
+    <div class="voy-title" id="sickTitle"></div>
+    <div class="voy-msg" id="sickMsg"></div>
+    <div class="voy-btns">
+      <button class="voy-cancel" onclick="closeSick()">Annuler</button>
+      <button class="voy-confirm" id="sickConfirm" onclick="confirmSick()"></button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ HABITS ═══════════ -->
@@ -955,11 +969,23 @@ function todayVarHabits(){
 
 function isSickDay(){ return localStorage.getItem('sick_'+currentDate) === '1'; }
 
-function toggleSick(){
+function askSick(){
+  const marking = !isSickDay();
+  document.getElementById('sickTitle').textContent = marking ? 'Marquer ce jour comme malade ?' : 'Annuler le statut malade ?';
+  document.getElementById('sickMsg').textContent = marking
+    ? 'Le score du jour sera neutralisé — il ne comptera ni positivement ni négativement dans ta résilience.'
+    : 'Le score normal sera de nouveau calculé pour ce jour.';
+  document.getElementById('sickConfirm').textContent = marking ? 'Confirmer' : 'Annuler le statut';
+  document.getElementById('sickOverlay').classList.add('show');
+}
+
+function closeSick(){ document.getElementById('sickOverlay').classList.remove('show'); }
+
+function confirmSick(){
   const sick = !isSickDay();
   localStorage.setItem('sick_'+currentDate, sick ? '1' : '0');
-  document.getElementById('sickBanner').classList.toggle('active', sick);
-  toast(sick ? '🤒 Jour marqué malade' : 'Jour normal rétabli');
+  closeSick();
+  toast(sick ? 'Jour marqué malade' : 'Jour normal rétabli');
   renderXP();
   pushHabits();
 }
