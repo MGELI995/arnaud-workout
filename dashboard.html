@@ -544,6 +544,21 @@ nav {
   font-size: 13px; font-weight: 600; cursor: pointer;
 }
 
+/* ── MUSCU INPUTS ── */
+.muscu-inputs { padding: 10px 8px 6px 40px; display:flex; flex-direction:column; gap:8px; }
+.muscu-row { display:flex; align-items:center; gap:8px; }
+.muscu-label { font-size:11px; color:var(--muted); width:36px; flex-shrink:0; font-weight:500; }
+.muscu-input {
+  width:80px; background:var(--bg2); border:1px solid var(--dim);
+  border-radius:8px; color:var(--text); font-family:var(--font);
+  font-size:14px; font-weight:500; padding:6px 10px; outline:none;
+  text-align:center; -moz-appearance:textfield;
+}
+.muscu-input::-webkit-outer-spin-button,
+.muscu-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.muscu-input:focus { border-color:var(--green); }
+.muscu-unit { font-size:11px; color:var(--muted); }
+
 /* ── TOAST ── */
 .toast {
   position: fixed;
@@ -731,6 +746,18 @@ const VARIABLE_HABITS = {
     { id:'var_arabe',       name:'Cours arabe',      desc:'Session avec la prof — 1h30',   weight:3 },
   ],
 };
+
+const MUSCU_EXOS = [
+  { id:'sdtTrap', name:'Soulevé de terre (trap bar)', short:'SDT' },
+  { id:'dips',    name:'Dips lestés',                 short:'Dips' },
+];
+
+function getMuscuData(){ try{ return JSON.parse(localStorage.getItem('muscu_data')||'{}'); }catch(e){ return {}; } }
+function saveMuscuEntry(kg_sdt, kg_dips){
+  const data = getMuscuData();
+  data[currentDate] = { sdtTrap: parseFloat(kg_sdt)||null, dips: parseFloat(kg_dips)||null };
+  localStorage.setItem('muscu_data', JSON.stringify(data));
+}
 
 const HABITS = [
   { id:'wake_6h',           name:'Réveil 6h',               desc:'Ne pas se rendormir après Fajr',                   weight:2 },
@@ -1219,8 +1246,33 @@ function toggleSport(){
 
 function tS(id){ss[id]=!ss[id];saveHL();renderSport();renderXP();pushHabits();}
 
+const INFO_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+
 function renderSport(){
+  const muscuData = getMuscuData();
+  const todayEntry = muscuData[currentDate] || {};
+
   document.getElementById('sportlist').innerHTML=SPORT.map(s=>{
+    if(s.id==='muscu'){
+      const done = ss[s.id];
+      const infoBtn = `<button onclick="openMuscuStats(event)" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;opacity:0.7">${INFO_SVG}</button>`;
+      const tag = `<div style="display:flex;align-items:center;gap:4px">${infoBtn}<span style="font-size:10px;color:var(--muted)">+${s.bonus}pts</span></div>`;
+      const inputs = done ? `
+        <div class="muscu-inputs" onclick="event.stopPropagation()">
+          ${MUSCU_EXOS.map(e=>`
+            <div class="muscu-row">
+              <span class="muscu-label">${e.short}</span>
+              <input class="muscu-input" type="number" step="2.5" placeholder="— kg" value="${todayEntry[e.id]||''}"
+                onchange="onMuscuInput()" id="minput_${e.id}">
+              <span class="muscu-unit">kg</span>
+            </div>`).join('')}
+        </div>` : '';
+      return `<div class="row ${done?'done':''}" onclick="tS('muscu')">
+        <div class="circle">${done?CHECK_SVG:''}</div>
+        <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
+        ${tag}
+      </div>${inputs}`;
+    }
     const tag = s.bonus>0
       ? `<div style="font-size:10px;color:var(--muted);white-space:nowrap">+${s.bonus}pts</div>`
       : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">tracker</div>`;
@@ -1231,6 +1283,87 @@ function renderSport(){
     </div>`;
   }).join('');
   renderSportHeatmap();
+}
+
+function onMuscuInput(){
+  const sdt  = document.getElementById('minput_sdtTrap')?.value;
+  const dips = document.getElementById('minput_dips')?.value;
+  saveMuscuEntry(sdt, dips);
+}
+
+function openMuscuStats(e){
+  e.stopPropagation();
+  const data = getMuscuData();
+  const sessions = Object.entries(data)
+    .filter(([,v])=>v && (v.sdtTrap||v.dips))
+    .sort(([a],[b])=>a<b?-1:1);
+
+  if(sessions.length < 2){
+    document.getElementById('ovTitle').textContent = 'Progression musculation';
+    document.getElementById('ovBody').innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Pas encore assez de données — reviens après 2 séances.</div>`;
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    return;
+  }
+
+  const sdtVals  = sessions.map(([d,v])=>({d, kg:v.sdtTrap})).filter(x=>x.kg);
+  const dipsVals = sessions.map(([d,v])=>({d, kg:v.dips})).filter(x=>x.kg);
+
+  function pct(arr){ if(arr.length<2)return null; return Math.round((arr[arr.length-1].kg/arr[0].kg-1)*100); }
+  const pctSdt  = pct(sdtVals);
+  const pctDips = pct(dipsVals);
+
+  const W=320, H=140, PAD={t:16,r:16,b:28,l:40};
+  const iW=W-PAD.l-PAD.r, iH=H-PAD.t-PAD.b;
+
+  function makeLine(vals, color){
+    if(vals.length<2) return '';
+    const allKg = vals.map(x=>x.kg);
+    const minK=Math.min(...allKg), maxK=Math.max(...allKg);
+    const range=maxK-minK||10;
+    const xStep=iW/(vals.length-1);
+    const pts = vals.map((x,i)=>{
+      const cx=PAD.l+i*xStep;
+      const cy=PAD.t+iH-(x.kg-minK)/range*iH;
+      return `${cx},${cy}`;
+    }).join(' ');
+    const dots = vals.map((x,i)=>{
+      const cx=PAD.l+i*xStep;
+      const cy=PAD.t+iH-(x.kg-minK)/range*iH;
+      return `<circle cx="${cx}" cy="${cy}" r="3" fill="${color}" title="${x.d}: ${x.kg}kg"/>`;
+    }).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
+  }
+
+  // Grid lines Y (3 lignes)
+  const allKg=[...sdtVals,...dipsVals].map(x=>x.kg);
+  const gMin=Math.min(...allKg), gMax=Math.max(...allKg);
+  const gridLines = [0,0.5,1].map(r=>{
+    const y=PAD.t+iH-r*iH;
+    const val=Math.round(gMin+r*(gMax-gMin));
+    return `<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="var(--bg3)" stroke-width="1"/>
+            <text x="${PAD.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="var(--muted)">${val}</text>`;
+  }).join('');
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
+    ${gridLines}
+    ${makeLine(sdtVals,'var(--green)')}
+    ${makeLine(dipsVals,'#60a5fa')}
+  </svg>`;
+
+  const legend = `<div style="display:flex;gap:16px;margin-top:10px;font-size:11px">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:3px;background:var(--green);border-radius:2px"></div>SDT${pctSdt!=null?` <span style="color:${pctSdt>=0?'var(--green)':'#ef4444'}">(${pctSdt>=0?'+':''}${pctSdt}%)</span>`:''}</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:3px;background:#60a5fa;border-radius:2px"></div>Dips${pctDips!=null?` <span style="color:${pctDips>=0?'var(--green)':'#ef4444'}">(${pctDips>=0?'+':''}${pctDips}%)</span>`:''}</div>
+  </div>`;
+
+  const lastEntry = sessions[sessions.length-1];
+  const lastDate = new Date(lastEntry[0]+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+  const summary = `<div style="margin-top:14px;font-size:11px;color:var(--muted)">${sessions.length} séances enregistrées · Dernière : ${lastDate}</div>`;
+
+  document.getElementById('ovTitle').textContent = 'Progression musculation';
+  document.getElementById('ovBody').innerHTML = `<div style="padding:16px 20px">${svg}${legend}${summary}</div>`;
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
 }
 
 function renderSportHeatmap(){
