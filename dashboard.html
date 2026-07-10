@@ -773,6 +773,7 @@ const HABITS = [
   { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement', weight:2 },
   { id:'no_music',         name:'Pas de musique',          desc:'Silence et dhikr — tranquillité d\'esprit',       weight:2 },
   { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum',                     weight:3 },
+  { id:'preply',           name:'Cours Preply',            desc:'1h avec professeur natif',                         weight:2, bonus:true },
 ];
 
 const DEEN = [
@@ -792,7 +793,6 @@ const DEEN = [
 const SPORT = [
   { id:'bjj',    name:'BJJ',          desc:'Séance ou drill',                     bonus:2 },
   { id:'muscu',  name:'Muscu',        desc:'Séance de musculation',               bonus:2 },
-  { id:'preply', name:'Cours Preply', desc:'1h avec professeur natif — bonus',    bonus:2 },
   { id:'cheat',  name:'Cheat meal',   desc:'Repas hors plan — tracking uniquement', bonus:0 },
 ];
 
@@ -1025,8 +1025,9 @@ function scoreJour() {
   const allHabits = [...HABITS, ...todayVarHabits()];
   allHabits.forEach(h=>{
     const w=h.weight||1;
-    total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
+    if(h.bonus){ if(val>0) done+=w; return; } // bonus : numérateur seulement
+    total+=w;
     if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
