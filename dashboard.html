@@ -670,7 +670,7 @@ nav {
   </div>
 
   <div class="rt" id="sporttoggle" onclick="toggleSport()">
-    <span>Physique</span>
+    <span>Bonus</span>
     <span class="rt-arrow">▶</span>
   </div>
   <div class="rbody" id="sportbody">
@@ -682,6 +682,8 @@ nav {
       <div class="hm-cell" style="background:rgba(59,130,246,0.85)"></div><span style="font-size:10px;color:var(--muted)">Muscu</span>
       <div class="hm-cell" style="background:rgba(168,85,247,0.9)"></div><span style="font-size:10px;color:var(--muted)">Les deux</span>
     </div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meal</div>
+    <div id="cheatrow"></div>
     <div style="margin-top:6px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meals — 90 jours</div>
     <div class="heatmap-wrap"><div class="heatmap-grid" id="cheatgrid"></div></div>
     <div class="heatmap-legend" style="margin-bottom:8px">
@@ -775,7 +777,6 @@ const HABITS = [
   { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement', weight:2 },
   { id:'no_music',         name:'Pas de musique',          desc:'Silence et dhikr — tranquillité d\'esprit',       weight:2 },
   { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum',                     weight:3 },
-  { id:'preply',           name:'Cours Preply',            desc:'1h avec professeur natif',                         weight:2, bonus:true },
 ];
 
 const DEEN = [
@@ -792,12 +793,13 @@ const DEEN = [
   { id:'tawbah',        name:'Tawbah — repentir',        desc:'Istighfār sincère · 3 minutes',              max:1, xp:40  },
 ];
 
-const SPORT = [
-  { id:'bjj',    name:'BJJ',          desc:'Séance ou drill',                       xp:30 },
-  { id:'muscu',  name:'Muscu',        desc:'Séance de musculation',                 xp:25 },
-  { id:'najah',  name:'Cours Najah',  desc:'Session avec le Sheikh — 4/sem',        xp:40, weekTarget:4 },
-  { id:'cheat',  name:'Cheat meal',   desc:'Repas hors plan — tracking uniquement', xp:0  },
+const BONUS = [
+  { id:'bjj',    name:'BJJ',           desc:'Cours — Brazilian Jiu-Jitsu',       weight:3 },
+  { id:'muscu',  name:'Muscu',         desc:'Séance de musculation',              weight:2 },
+  { id:'najah',  name:'Cours Najah',   desc:'Session avec le Sheikh — 4/sem',    weight:3, max:4 },
+  { id:'preply', name:'Cours Preply',  desc:'1h avec professeur natif',           weight:3 },
 ];
+const CHEAT = { id:'cheat', name:'Cheat meal', desc:'Repas hors plan — tracking uniquement' };
 
 const RAWATIB = [
   { id:'raw_fajr',        name:'Sunnah al-Fajr',          desc:'2 rakʿahs avant Fajr',                xp:50 },
@@ -887,10 +889,10 @@ function nextDay() {
 async function loadDay() {
   hs={}; ds={}; rs={}; note='';
   renderDateNav();
-  renderHabits(); renderDeen(); renderRawatib(); renderSport(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
   document.getElementById('noteEl').value='';
   await loadHL();
-  renderHabits(); renderDeen(); renderRawatib(); renderSport(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
 }
 
 let toastT;
@@ -1033,12 +1035,15 @@ function scoreJour() {
   allHabits.forEach(h=>{
     const w=h.weight||1;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
-    if(h.bonus){ if(val>0) done+=w; return; }
     total+=w;
     if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
-  if(ss['cheat']) done-=2; // cheat meal = -2pts sur le score
+  BONUS.forEach(b=>{
+    const val=typeof hs[b.id]==='number'?hs[b.id]:(hs[b.id]?1:0);
+    if(b.max&&b.max>1) done+=b.weight*val;
+    else if(val>0) done+=b.weight;
+  });
   return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
 
@@ -1253,13 +1258,14 @@ function toggleSport(){
   t.classList.toggle('open',open);
 }
 
-function tS(id){ss[id]=!ss[id];saveHL();renderSport();renderXP();pushHabits();}
-
-function xpSport(){
-  let x=0;
-  SPORT.forEach(s=>{ if(ss[s.id] && s.xp) x+=s.xp; });
-  return x;
+function tB(id){
+  const b=BONUS.find(x=>x.id===id);
+  if(b&&b.max&&b.max>1){ hs[id]=((hs[id]||0)>=b.max)?0:(hs[id]||0)+1; }
+  else{ hs[id]=!hs[id]; }
+  saveHL(); renderBonus(); renderXP(); pushHabits();
 }
+function tCheat(){ss[CHEAT.id]=!ss[CHEAT.id];saveHL();renderBonus();pushHabits();}
+
 
 function getWeekDates(){
   const d=new Date(currentDate+'T12:00:00');
@@ -1269,40 +1275,50 @@ function getWeekDates(){
 }
 
 function getWeekSportCount(id){
+  const isCheat = id === CHEAT.id;
   return getWeekDates().reduce((sum,d)=>{
-    try{ const p=JSON.parse(localStorage.getItem('hs_'+d)||'{}'); return sum+(p.ss&&p.ss[id]?1:0); }
-    catch(e){ return sum; }
+    try{
+      const p=JSON.parse(localStorage.getItem('hs_'+d)||'{}');
+      const state = isCheat ? (p.ss||{}) : (p.hs||{});
+      const val = state[id];
+      if(!val) return sum;
+      return sum + (typeof val==='number' ? val : 1);
+    }catch(e){ return sum; }
   },0);
 }
 
 const INFO_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
 
-function renderSport(){
+function renderBonus(){
   const muscuData = getMuscuData();
   const todayEntry = muscuData[currentDate] || {};
 
-  document.getElementById('sportlist').innerHTML=SPORT.map(s=>{
-    const done = ss[s.id];
-    const weekCount = getWeekSportCount(s.id);
+  document.getElementById('sportlist').innerHTML = BONUS.map(b=>{
+    const val = typeof hs[b.id]==='number' ? hs[b.id] : (hs[b.id]?1:0);
+    const done = val > 0;
+    const weekCount = getWeekSportCount(b.id);
 
-    // Tag droit : XP + compteur hebdo
-    let tag;
-    if(s.weekTarget){
-      const full = weekCount >= s.weekTarget;
-      tag = `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <span style="font-size:10px;color:${full?'var(--green)':'var(--muted)'};white-space:nowrap;font-weight:${full?600:400}">${weekCount}/${s.weekTarget} sem</span>
-        ${s.xp?`<span style="font-size:10px;color:var(--muted)">+${s.xp} XP</span>`:''}
+    // Compteur hebdo tag (right side)
+    const weekTag = `<span style="font-size:10px;color:var(--muted);white-space:nowrap">${weekCount}× sem</span>`;
+
+    // Najah — dots like supplements
+    if(b.max && b.max > 1){
+      const full = val >= b.max;
+      const partial = val > 0 && !full;
+      const cls = full ? 'done' : partial ? 'partial' : '';
+      const lbl = full ? CHECK_SVG : partial ? val : '';
+      const dots = `<div class="dots-wrap">${Array.from({length:b.max},(_,i)=>`<div class="d ${i<val?'on':''}"></div>`).join('')}</div>`;
+      const weekFull = weekCount >= b.max;
+      const wTag = `<span style="font-size:10px;color:${weekFull?'var(--green)':'var(--muted)'};white-space:nowrap;font-weight:${weekFull?600:400}">${weekCount}/${b.max} sem</span>`;
+      return `<div class="drow ${cls}" onclick="tB('${b.id}')">
+        <div class="dcircle">${lbl}</div>
+        <div class="ri"><div class="rn">${b.name}</div><div class="rd">${b.desc}</div></div>
+        ${dots}${wTag}
       </div>`;
-    } else if(s.xp){
-      tag = `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <span style="font-size:10px;color:var(--muted);white-space:nowrap">${weekCount}× sem</span>
-        <span style="font-size:10px;color:var(--muted)">+${s.xp} XP</span>
-      </div>`;
-    } else {
-      tag = `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${weekCount}× sem</div>`;
     }
 
-    if(s.id==='muscu'){
+    // Muscu — toggle + kg inputs
+    if(b.id === 'muscu'){
       const infoBtn = `<button onclick="openMuscuStats(event)" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;opacity:0.7">${INFO_SVG}</button>`;
       const inputs = done ? `
         <div class="muscu-inputs" onclick="event.stopPropagation()">
@@ -1314,19 +1330,30 @@ function renderSport(){
               <span class="muscu-unit">kg</span>
             </div>`).join('')}
         </div>` : '';
-      return `<div class="row ${done?'done':''}" onclick="tS('muscu')">
+      return `<div class="row ${done?'done':''}" onclick="tB('muscu')">
         <div class="circle">${done?CHECK_SVG:''}</div>
-        <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
-        <div style="display:flex;align-items:center;gap:4px">${infoBtn}${tag}</div>
+        <div class="ri"><div class="rn">${b.name}</div><div class="rd">${b.desc}</div></div>
+        <div style="display:flex;align-items:center;gap:6px">${infoBtn}${weekTag}</div>
       </div>${inputs}`;
     }
 
-    return `<div class="row ${done?'done':''}" onclick="tS('${s.id}')">
+    // Default boolean toggle
+    return `<div class="row ${done?'done':''}" onclick="tB('${b.id}')">
       <div class="circle">${done?CHECK_SVG:''}</div>
-      <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
-      ${tag}
+      <div class="ri"><div class="rn">${b.name}</div><div class="rd">${b.desc}</div></div>
+      ${weekTag}
     </div>`;
   }).join('');
+
+  // Cheat meal — section séparée en bas
+  const cheatDone = ss[CHEAT.id];
+  const cheatWeek = getWeekSportCount(CHEAT.id);
+  document.getElementById('cheatrow').innerHTML = `<div class="row ${cheatDone?'done':''}" onclick="tCheat()" style="opacity:0.75">
+    <div class="circle">${cheatDone?CHECK_SVG:''}</div>
+    <div class="ri"><div class="rn">${CHEAT.name}</div><div class="rd">${CHEAT.desc}</div></div>
+    <span style="font-size:10px;color:var(--muted);white-space:nowrap">${cheatWeek}× sem</span>
+  </div>`;
+
   renderSportHeatmap();
 }
 
@@ -1483,22 +1510,24 @@ async function pushHabits(){
   const d=currentDate, done=activeHabits(HABITS).filter(h=>hs[h.id]).length, xp=xpDeen();
   const sick=isSickDay();
   const score=scoreJour();
-  const sportDone=SPORT.filter(s=>ss[s.id] && s.xp>0);
-  const sportXP=xpSport();
+  const bonusDone=BONUS.filter(b=>{ const v=typeof hs[b.id]==='number'?hs[b.id]:(hs[b.id]?1:0); return v>0; });
   let content=sick
     ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
-    : `# HABITS — ${d}\n\n**Score : ${score}%**\n**DEEN XP : ${xp} / 500**\n${sportXP?`**SPORT XP : ${sportXP}**\n`:''}\n`;
+    : `# HABITS — ${d}\n\n**Score : ${score}%**\n**DEEN XP : ${xp} / 500**\n\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
   activeHabits(HABITS).forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
   const vh=todayVarHabits();
   if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
+  if(bonusDone.length){content+=`\n## Bonus\n\n`;bonusDone.forEach(b=>{
+    const v=typeof hs[b.id]==='number'?hs[b.id]:(hs[b.id]?1:0);
+    content+=`- ✅ ${b.name}${b.max&&b.max>1?` (${v}/${b.max})`:''}\n`;
+  });}
+  if(ss[CHEAT.id]){content+=`\n- ⚠️ Cheat meal\n`;}
   content+=`\n## DEEN\n\n`;
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
   if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
-  if(sportDone.length){content+=`\n## Activités\n\n`;sportDone.forEach(s=>{content+=`- ✅ ${s.name} | XP: +${s.xp}\n`;});}
-  if(ss['cheat']){content+=`\n- ⚠️ Cheat meal\n`;}
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
@@ -1514,49 +1543,13 @@ async function pushHabits(){
   if(hPushQueued){hPushQueued=false;pushHabits();}
 }
 
-async function saveHabits(){
-  const d=date(), done=HABITS.filter(h=>hs[h.id]).length, xp=xpTotal();
-  const sick=isSickDay();
-  const score=scoreJour();
-  const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
-  let content=sick
-    ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
-    : `# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
-  if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
-  content+=`## Rituels\n\n`;
-  HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
-  const vh=todayVarHabits();
-  if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
-  content+=`\n## DEEN\n\n`;
-  DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
-  const rawDone=RAWATIB.filter(r=>rs[r.id]);
-  if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
-  if(sportDone){content+=`\n## Sport\n\n- 🏋️ ${sportDone}\n`;}
-  const md=xp>=500;
-  content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
-  content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-xp} XP manquants\n`;
-  content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
-
-  const btn=document.getElementById('saveBtn');
-  btn.textContent='…'; btn.classList.add('saved'); sync('pending');
-  const body=JSON.stringify({content,date:d,section:'HABITS'});
-  let ok=false;
-  for(let i=0;i<3;i++){
-    try{const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body});if(r.ok){ok=true;break};}catch(e){}
-  }
-  sync(ok?'ok':'error');
-  btn.classList.remove('saved');
-  if(ok){btn.textContent='Sauvegardé ✓';btn.classList.add('success');toast(`${done}/${HABITS.length} habits · ${xp} XP${xp>=500?' · Muslim Day':''}`);}
-  else{btn.textContent='Erreur';}
-  setTimeout(()=>{btn.textContent='Sauvegarder';btn.classList.remove('success');},2500);
-}
 
 async function init(){
   currentDate = date();
   renderDateNav();
   applyVoyageUI();
   await loadHL();
-  renderHabits();renderDeen();renderRawatib();renderSport();renderXP();
+  renderHabits();renderDeen();renderRawatib();renderBonus();renderXP();
   loadResilience();
 }
 init();
