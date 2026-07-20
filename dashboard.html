@@ -1038,6 +1038,7 @@ function scoreJour() {
     if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
+  if(ss['cheat']) done-=2; // cheat meal = -2pts sur le score
   return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
 
