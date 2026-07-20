@@ -739,11 +739,12 @@ const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev
 // 0=dim 1=lun 2=mar 3=mer 4=jeu 5=ven 6=sam
 const VARIABLE_HABITS = {
   1: [
-    { id:'var_mr_najah',    name:'Cours Mr Najah',   desc:'Session de cours',              weight:2 },
     { id:'var_deep_extra',  name:'Deep work +1h',    desc:'2h de deep work aujourd\'hui',  weight:2 },
+    { id:'var_csaa_extra',  name:'CSAA +30min',      desc:'2h de révision aujourd\'hui',   weight:2 },
   ],
   0: [
     { id:'var_arabe',       name:'Cours arabe',      desc:'Session avec la prof — 1h30',   weight:3 },
+    { id:'var_csaa_extra',  name:'CSAA +30min',      desc:'2h de révision aujourd\'hui',   weight:2 },
   ],
 };
 
@@ -770,6 +771,7 @@ const HABITS = [
   { id:'eng_anki',         name:'Anki vocab',              desc:'Flashcards — 15 min',                             weight:3 },
   { id:'eng_write',        name:'TEDx + debrief',          desc:'Écoute TEDx + debrief avec Claude — 20 min',      weight:3 },
   { id:'deep_work',        name:'Deep work',               desc:'Travail concentré — 1h',                          weight:3 },
+  { id:'csaa',             name:'CSAA',                    desc:'Révision — 1h30',                                  weight:3, startDate:'2026-07-21' },
   { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement', weight:2 },
   { id:'no_music',         name:'Pas de musique',          desc:'Silence et dhikr — tranquillité d\'esprit',       weight:2 },
   { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum',                     weight:3 },
@@ -791,9 +793,10 @@ const DEEN = [
 ];
 
 const SPORT = [
-  { id:'bjj',    name:'BJJ',          desc:'Séance ou drill',                     bonus:2 },
-  { id:'muscu',  name:'Muscu',        desc:'Séance de musculation',               bonus:2 },
-  { id:'cheat',  name:'Cheat meal',   desc:'Repas hors plan — tracking uniquement', bonus:0 },
+  { id:'bjj',    name:'BJJ',          desc:'Séance ou drill',                       xp:30 },
+  { id:'muscu',  name:'Muscu',        desc:'Séance de musculation',                 xp:25 },
+  { id:'najah',  name:'Cours Najah',  desc:'Session avec le Sheikh — 4/sem',        xp:40, weekTarget:4 },
+  { id:'cheat',  name:'Cheat meal',   desc:'Repas hors plan — tracking uniquement', xp:0  },
 ];
 
 const RAWATIB = [
@@ -1018,20 +1021,23 @@ function confirmSick(){
   pushHabits();
 }
 
+function activeHabits(list) {
+  return list.filter(h => !h.startDate || currentDate >= h.startDate);
+}
+
 function scoreJour() {
   if(isSickDay()) return null;
   if(voyageMode) return scoreJourVoyage();
   let total=0, done=0;
-  const allHabits = [...HABITS, ...todayVarHabits()];
+  const allHabits = [...activeHabits(HABITS), ...todayVarHabits()];
   allHabits.forEach(h=>{
     const w=h.weight||1;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
-    if(h.bonus){ if(val>0) done+=w; return; } // bonus : numérateur seulement
+    if(h.bonus){ if(val>0) done+=w; return; }
     total+=w;
     if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
-  SPORT.forEach(s=>{ if(ss[s.id]) done+=s.bonus; });
   return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
 
@@ -1096,7 +1102,8 @@ function habitRow(h) {
 }
 
 function renderHabits() {
-  const list = voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
+  const base = voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
+  const list = activeHabits(base);
   document.getElementById('hlist').innerHTML = list.map(habitRow).join('');
   const varList = voyageMode ? [] : todayVarHabits();
   const varEl = document.getElementById('vlist');
@@ -1202,7 +1209,6 @@ function scoreJourVoyage(){
     if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
-  SPORT.forEach(s=>{ if(ss[s.id]) done+=s.bonus; });
   return total>0?Math.min(100,Math.round(done/total*100)):0;
 }
 
@@ -1248,6 +1254,26 @@ function toggleSport(){
 
 function tS(id){ss[id]=!ss[id];saveHL();renderSport();renderXP();pushHabits();}
 
+function xpSport(){
+  let x=0;
+  SPORT.forEach(s=>{ if(ss[s.id] && s.xp) x+=s.xp; });
+  return x;
+}
+
+function getWeekDates(){
+  const d=new Date(currentDate+'T12:00:00');
+  const day=d.getDay(); // 0=dim
+  const mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
+  return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x.toISOString().split('T')[0];});
+}
+
+function getWeekSportCount(id){
+  return getWeekDates().reduce((sum,d)=>{
+    try{ const p=JSON.parse(localStorage.getItem('hs_'+d)||'{}'); return sum+(p.ss&&p.ss[id]?1:0); }
+    catch(e){ return sum; }
+  },0);
+}
+
 const INFO_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
 
 function renderSport(){
@@ -1255,10 +1281,28 @@ function renderSport(){
   const todayEntry = muscuData[currentDate] || {};
 
   document.getElementById('sportlist').innerHTML=SPORT.map(s=>{
+    const done = ss[s.id];
+    const weekCount = getWeekSportCount(s.id);
+
+    // Tag droit : XP + compteur hebdo
+    let tag;
+    if(s.weekTarget){
+      const full = weekCount >= s.weekTarget;
+      tag = `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span style="font-size:10px;color:${full?'var(--green)':'var(--muted)'};white-space:nowrap;font-weight:${full?600:400}">${weekCount}/${s.weekTarget} sem</span>
+        ${s.xp?`<span style="font-size:10px;color:var(--muted)">+${s.xp} XP</span>`:''}
+      </div>`;
+    } else if(s.xp){
+      tag = `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span style="font-size:10px;color:var(--muted);white-space:nowrap">${weekCount}× sem</span>
+        <span style="font-size:10px;color:var(--muted)">+${s.xp} XP</span>
+      </div>`;
+    } else {
+      tag = `<div style="font-size:10px;color:var(--muted);white-space:nowrap">${weekCount}× sem</div>`;
+    }
+
     if(s.id==='muscu'){
-      const done = ss[s.id];
       const infoBtn = `<button onclick="openMuscuStats(event)" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;opacity:0.7">${INFO_SVG}</button>`;
-      const tag = `<div style="display:flex;align-items:center;gap:4px">${infoBtn}<span style="font-size:10px;color:var(--muted)">+${s.bonus}pts</span></div>`;
       const inputs = done ? `
         <div class="muscu-inputs" onclick="event.stopPropagation()">
           ${MUSCU_EXOS.map(e=>`
@@ -1272,14 +1316,12 @@ function renderSport(){
       return `<div class="row ${done?'done':''}" onclick="tS('muscu')">
         <div class="circle">${done?CHECK_SVG:''}</div>
         <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
-        ${tag}
+        <div style="display:flex;align-items:center;gap:4px">${infoBtn}${tag}</div>
       </div>${inputs}`;
     }
-    const tag = s.bonus>0
-      ? `<div style="font-size:10px;color:var(--muted);white-space:nowrap">+${s.bonus}pts</div>`
-      : `<div style="font-size:10px;color:var(--muted);white-space:nowrap">tracker</div>`;
-    return `<div class="row ${ss[s.id]?'done':''}" onclick="tS('${s.id}')">
-      <div class="circle">${ss[s.id]?CHECK_SVG:''}</div>
+
+    return `<div class="row ${done?'done':''}" onclick="tS('${s.id}')">
+      <div class="circle">${done?CHECK_SVG:''}</div>
       <div class="ri"><div class="rn">${s.name}</div><div class="rd">${s.desc}</div></div>
       ${tag}
     </div>`;
@@ -1437,23 +1479,25 @@ let hPushBusy=false, hPushQueued=false;
 async function pushHabits(){
   if(hPushBusy){hPushQueued=true;return;}
   hPushBusy=true; sync('pending');
-  const d=currentDate, done=HABITS.filter(h=>hs[h.id]).length, xp=xpDeen();
+  const d=currentDate, done=activeHabits(HABITS).filter(h=>hs[h.id]).length, xp=xpDeen();
   const sick=isSickDay();
   const score=scoreJour();
-  const sportDone=SPORT.filter(s=>ss[s.id]).map(s=>s.name).join('+');
+  const sportDone=SPORT.filter(s=>ss[s.id] && s.xp>0);
+  const sportXP=xpSport();
   let content=sick
     ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
-    : `# HABITS — ${d}\n\n**Score : ${score}% (${done}/${HABITS.length})**\n**DEEN XP : ${xp} / 500**\n\n`;
+    : `# HABITS — ${d}\n\n**Score : ${score}%**\n**DEEN XP : ${xp} / 500**\n${sportXP?`**SPORT XP : ${sportXP}**\n`:''}\n`;
   if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
   content+=`## Rituels\n\n`;
-  HABITS.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
+  activeHabits(HABITS).forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
   const vh=todayVarHabits();
   if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
   content+=`\n## DEEN\n\n`;
   DEEN.forEach(item=>{const s=ds[item.id]||0;content+=`- ${s>0?'✅':'❌'} ${item.name}${item.max>1?` (${s}/${item.max})`:''} | XP: +${s*item.xp}\n`;});
   const rawDone=RAWATIB.filter(r=>rs[r.id]);
   if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
-  if(sportDone){content+=`\n## Sport\n\n- 🏋️ ${sportDone}\n`;}
+  if(sportDone.length){content+=`\n## Activités\n\n`;sportDone.forEach(s=>{content+=`- ✅ ${s.name} | XP: +${s.xp}\n`;});}
+  if(ss['cheat']){content+=`\n- ⚠️ Cheat meal\n`;}
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
