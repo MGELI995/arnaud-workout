@@ -971,7 +971,7 @@ function renderResilience(){
     let bg = 'var(--bg3)', label = `${key} — pas de donnée`;
     const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
     if(isVacance){
-      bg = 'rgba(150,150,150,0.35)'; label = `${key} — ✈️ vacances`;
+      bg = 'rgba(255,255,255,0.55)'; label = `${key} — ✈️ vacances`;
     } else if(entry && entry.sick){
       bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 malade`;
     } else if(entry && entry.s!=null){
