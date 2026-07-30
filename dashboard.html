@@ -913,7 +913,8 @@ clock(); setInterval(clock,10000);
 
 // ─── RÉSILIENCE (HEATMAP) ───
 const RES_DAYS = 90;
-const RES_START_DATE = '2026-06-23'; // la heatmap ne compte qu'à partir de cette date
+const RES_START_DATE = '2026-06-23';
+const VACANCES = [['2026-07-24','2026-07-29']];
 let resData = null;
 
 function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -968,7 +969,10 @@ function renderResilience(){
     const key = fmtDate(d);
     const entry = key >= RES_START_DATE ? resData[key] : null;
     let bg = 'var(--bg3)', label = `${key} — pas de donnée`;
-    if(entry && entry.sick){
+    const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
+    if(isVacance){
+      bg = 'rgba(150,150,150,0.35)'; label = `${key} — ✈️ vacances`;
+    } else if(entry && entry.sick){
       bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 malade`;
     } else if(entry && entry.s!=null){
       const score = entry.s;
@@ -988,7 +992,9 @@ function renderResilience(){
   for(let i=0;i<RES_DAYS;i++){
     const d = new Date(today); d.setDate(d.getDate()-i);
     const e = resData[fmtDate(d)];
-    if(e && e.sick) continue; // neutre, ne casse pas le streak
+    const kk = fmtDate(d);
+    if(VACANCES.some(([from,to])=>kk>=from&&kk<=to)) continue;
+    if(e && e.sick) continue;
     if(e && e.s!=null && e.s>=50) streak++; else break;
   }
   document.getElementById('resStreak').textContent = streak;
