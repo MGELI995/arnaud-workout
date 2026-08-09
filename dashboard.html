@@ -502,6 +502,19 @@ nav {
   color: #60a5fa; border-color: rgba(59,130,246,0.5);
   background: rgba(59,130,246,0.08);
 }
+.dayoff-btn {
+  background: none; border: 1px solid var(--dim); cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; color: var(--muted);
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.dayoff-btn:disabled { opacity: 0.3; cursor: default; }
+.dayoff-btn.active {
+  color: #fbbf24; border-color: rgba(251,191,36,0.5);
+  background: rgba(251,191,36,0.08);
+}
 
 /* ── VOYAGE BANNER ── */
 .voyage-banner {
@@ -586,6 +599,7 @@ nav {
   <span class="h-name">Arnaud</span>
   <div class="h-right">
     <span id="clock"></span>
+    <button class="dayoff-btn" id="dayoffBtn" onclick="toggleDayOff()" title="Day Off — disponible tous les 15 jours">Day Off</button>
     <button class="voyage-btn" id="voyageBtn" onclick="askVoyage()" title="Mode Voyage">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
       Voyage
@@ -608,6 +622,7 @@ nav {
 </div>
 <div class="voyage-banner" id="voyBanner">✈️ MODE VOYAGE — Piliers uniquement</div>
 <div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">JOUR MALADE — système neutralisé</div>
+<div class="voyage-banner" id="dayoffBanner" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.25);color:#fbbf24">☀️ DAY OFF — Prières uniquement</div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="prevDay()">←</button>
   <span class="dnav-label" id="dateLabel"></span>
@@ -891,9 +906,11 @@ function nextDay() {
 async function loadDay() {
   hs={}; ds={}; rs={}; note='';
   renderDateNav();
+  applyDayOffUI();
   renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
   document.getElementById('noteEl').value='';
   await loadHL();
+  applyDayOffUI();
   renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
 }
 
@@ -972,8 +989,11 @@ function renderResilience(){
     const entry = key >= RES_START_DATE ? resData[key] : null;
     let bg = 'var(--bg3)', label = `${key} — pas de donnée`;
     const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
+    const isDayOffKey = localStorage.getItem('dayoff_'+key) === '1';
     if(isVacance){
       bg = 'rgba(255,255,255,0.55)'; label = `${key} — ✈️ vacances`;
+    } else if(isDayOffKey){
+      bg = 'rgba(251,191,36,0.5)'; label = `${key} — ☀️ day off`;
     } else if(entry && entry.sick){
       bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 malade`;
     } else if(entry && entry.s!=null){
@@ -996,6 +1016,7 @@ function renderResilience(){
     const e = resData[fmtDate(d)];
     const kk = fmtDate(d);
     if(VACANCES.some(([from,to])=>kk>=from&&kk<=to)) continue;
+    if(localStorage.getItem('dayoff_'+kk) === '1') continue;
     if(e && e.sick) continue;
     if(e && e.s!=null && e.s>=50) streak++; else break;
   }
@@ -1037,6 +1058,7 @@ function activeHabits(list) {
 
 function scoreJour() {
   if(isSickDay()) return null;
+  if(isDayOff()) return null;
   if(voyageMode) return scoreJourVoyage();
   let total=0, done=0;
   const allHabits = [...activeHabits(HABITS), ...todayVarHabits()];
@@ -1075,14 +1097,15 @@ function color(pct) {
 
 function renderXP() {
   document.getElementById('sickBanner').classList.toggle('active', isSickDay());
+  applyDayOffUI();
   const elA = document.getElementById('scoreAlign');
   const elD = document.getElementById('scoreDeen');
   const elQ = document.getElementById('scoreDounia');
 
-  if(isSickDay()){
+  if(isSickDay() || isDayOff()){
     elA.textContent='—'; elA.style.color='var(--muted)';
     elD.textContent='—'; elD.style.color='var(--muted)';
-    elQ.textContent='—'; elQ.style.color='var(--muted)';
+    elQ.textContent=isDayOff()?'☀️':'—'; elQ.style.color='var(--muted)';
     return;
   }
 
@@ -1116,10 +1139,13 @@ function habitRow(h) {
 }
 
 function renderHabits() {
-  const base = voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
+  const dayOff = isDayOff();
+  const base = dayOff ? [] : voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
   const list = activeHabits(base);
-  document.getElementById('hlist').innerHTML = list.map(habitRow).join('');
-  const varList = voyageMode ? [] : todayVarHabits();
+  document.getElementById('hlist').innerHTML = dayOff
+    ? '<div style="padding:12px 0;color:var(--muted);font-size:12px;text-align:center">☀️ Day Off — repose-toi</div>'
+    : list.map(habitRow).join('');
+  const varList = (dayOff || voyageMode) ? [] : todayVarHabits();
   const varEl = document.getElementById('vlist');
   const varSection = document.getElementById('var-section');
   if(varList.length){
@@ -1199,6 +1225,52 @@ function saveNote(){
   localStorage.setItem('hn_'+currentDate,note);
   clearTimeout(noteTimer);
   noteTimer=setTimeout(pushHabits, 1500);
+}
+
+// ─── DAY OFF ───
+function isDayOff(){ return localStorage.getItem('dayoff_'+currentDate) === '1'; }
+
+function dayoffDaysLeft(){
+  const last = localStorage.getItem('dayoff_last');
+  if(!last) return 0;
+  const diff = Math.floor((new Date(currentDate+'T12:00:00') - new Date(last+'T12:00:00')) / 86400000);
+  return Math.max(0, 15 - diff);
+}
+
+function dayoffAvailable(){
+  return dayoffDaysLeft() === 0;
+}
+
+function applyDayOffUI(){
+  const btn = document.getElementById('dayoffBtn');
+  const active = isDayOff();
+  const avail = dayoffAvailable();
+  btn.classList.toggle('active', active);
+  if(active){
+    btn.textContent = 'Day Off ✓';
+    btn.disabled = false;
+  } else if(avail){
+    btn.textContent = 'Day Off';
+    btn.disabled = false;
+  } else {
+    const d = dayoffDaysLeft();
+    btn.textContent = `Day Off — ${d}j`;
+    btn.disabled = true;
+  }
+  document.getElementById('dayoffBanner').classList.toggle('active', active);
+}
+
+function toggleDayOff(){
+  if(isDayOff()){
+    localStorage.removeItem('dayoff_'+currentDate);
+    // ne remet pas dayoff_last à zéro — on garde la date d'utilisation
+  } else {
+    if(!dayoffAvailable()) return;
+    localStorage.setItem('dayoff_'+currentDate, '1');
+    localStorage.setItem('dayoff_last', currentDate);
+  }
+  applyDayOffUI();
+  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
 }
 
 // ─── MODE VOYAGE ───
