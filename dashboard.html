@@ -112,6 +112,8 @@ nav {
 .heatmap-legend { display:flex; align-items:center; gap:7px; margin-top:12px; font-size:10px; color:var(--muted); }
 .heatmap-legend .hm-cell { width:13px; height:13px; }
 .res-loading { font-size:11px; color:var(--muted); padding:20px 0; text-align:center; }
+.hm-day-col { display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
+.hm-day-lbl { height:16px; display:flex; align-items:center; font-size:9px; color:var(--muted); justify-content:flex-end; min-width:10px; }
 
 /* ── SCORES ── */
 .scores-wrap {
@@ -599,7 +601,7 @@ nav {
   <span class="h-name">Arnaud</span>
   <div class="h-right">
     <span id="clock"></span>
-    <button class="dayoff-btn" id="dayoffBtn" onclick="toggleDayOff()" title="Day Off — disponible tous les 15 jours">Day Off</button>
+    <button class="dayoff-btn" id="dayoffBtn" onclick="toggleDayOff()" title="Day Off — available every 15 days">Day Off</button>
     <button class="voyage-btn" id="voyageBtn" onclick="askVoyage()" title="Mode Voyage">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
       Voyage
@@ -615,14 +617,14 @@ nav {
     <div class="voy-title" id="voyTitle"></div>
     <div class="voy-msg" id="voyMsg"></div>
     <div class="voy-btns">
-      <button class="voy-cancel" onclick="closeVoy()">Annuler</button>
+      <button class="voy-cancel" onclick="closeVoy()">Cancel</button>
       <button class="voy-confirm" id="voyConfirm" onclick="confirmVoyage()"></button>
     </div>
   </div>
 </div>
-<div class="voyage-banner" id="voyBanner">✈️ MODE VOYAGE — Piliers uniquement</div>
-<div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">JOUR MALADE — système neutralisé</div>
-<div class="voyage-banner" id="dayoffBanner" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.25);color:#fbbf24">☀️ DAY OFF — Prières uniquement</div>
+<div class="voyage-banner" id="voyBanner">✈️ TRAVEL MODE — Pillars only</div>
+<div class="voyage-banner" id="sickBanner" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#f87171">SICK DAY — score neutralised</div>
+<div class="voyage-banner" id="dayoffBanner" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.25);color:#fbbf24">☀️ DAY OFF — Prayers only</div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="prevDay()">←</button>
   <span class="dnav-label" id="dateLabel"></span>
@@ -638,7 +640,7 @@ nav {
     <div class="voy-title" id="sickTitle"></div>
     <div class="voy-msg" id="sickMsg"></div>
     <div class="voy-btns">
-      <button class="voy-cancel" onclick="closeSick()">Annuler</button>
+      <button class="voy-cancel" onclick="closeSick()">Cancel</button>
       <button class="voy-confirm" id="sickConfirm" onclick="confirmSick()"></button>
     </div>
   </div>
@@ -650,7 +652,7 @@ nav {
 
   <div class="scores-wrap">
     <div class="score-block">
-      <div class="score-label">Alignement</div>
+      <div class="score-label">Alignment</div>
       <div class="score-num" id="scoreAlign">0%</div>
     </div>
     <div class="score-divider"></div>
@@ -665,11 +667,11 @@ nav {
     </div>
   </div>
 
-  <div class="section">Quotidien</div>
+  <div class="section">Daily</div>
   <div id="hlist"></div>
 
   <div id="var-section" style="display:none">
-    <div class="section">Programme du jour</div>
+    <div class="section">Today</div>
     <div id="vlist"></div>
   </div>
 
@@ -690,50 +692,64 @@ nav {
   </div>
   <div class="rbody" id="sportbody">
     <div id="sportlist"></div>
-    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Entraînements — 90 jours</div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Training — 90 days</div>
     <div class="heatmap-wrap"><div class="heatmap-grid" id="sportgrid"></div></div>
     <div class="heatmap-legend" style="margin-bottom:8px">
       <div class="hm-cell" style="background:rgba(34,197,94,0.85)"></div><span style="font-size:10px;color:var(--muted)">BJJ</span>
       <div class="hm-cell" style="background:rgba(59,130,246,0.85)"></div><span style="font-size:10px;color:var(--muted)">Muscu</span>
-      <div class="hm-cell" style="background:rgba(168,85,247,0.9)"></div><span style="font-size:10px;color:var(--muted)">Les deux</span>
+      <div class="hm-cell" style="background:rgba(168,85,247,0.9)"></div><span style="font-size:10px;color:var(--muted)">Both</span>
     </div>
     <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meal</div>
     <div id="cheatrow"></div>
-    <div style="margin-top:6px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meals — 90 jours</div>
+    <div style="margin-top:6px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Cheat meals — 90 days</div>
     <div class="heatmap-wrap"><div class="heatmap-grid" id="cheatgrid"></div></div>
     <div class="heatmap-legend" style="margin-bottom:8px">
       <div class="hm-cell" style="background:rgba(239,68,68,0.7)"></div><span style="font-size:10px;color:var(--muted)">Cheat meal</span>
     </div>
   </div>
 
-  <div class="section">Note du jour</div>
+  <div class="section">Daily note</div>
   <div class="note-wrap">
-    <textarea class="note" id="noteEl" placeholder="Note libre…" oninput="saveNote()"></textarea>
+    <textarea class="note" id="noteEl" placeholder="Free note…" oninput="saveNote()"></textarea>
   </div>
 
   <div class="res-summary">
     <div class="res-stat">
       <div class="res-stat-num" id="resStreak">—</div>
-      <div class="res-stat-label">Streak actuel (jours ≥50%)</div>
+      <div class="res-stat-label">Current streak (≥50%)</div>
     </div>
     <div class="res-stat">
       <div class="res-stat-num" id="resAvg">—</div>
-      <div class="res-stat-label">Moyenne 90 jours</div>
+      <div class="res-stat-label">90-day average</div>
     </div>
   </div>
 
-  <div class="section">Résilience — 12 dernières semaines</div>
-  <div class="heatmap-wrap">
-    <div class="heatmap-grid" id="resGrid"><div class="res-loading">Chargement…</div></div>
+  <div class="section">Resilience — last 12 weeks</div>
+  <div style="display:flex;gap:4px;align-items:flex-start;">
+    <div class="hm-day-col">
+      <div class="hm-day-lbl" style="height:14px;margin-bottom:2px"></div>
+      <div class="hm-day-lbl">M</div>
+      <div class="hm-day-lbl"></div>
+      <div class="hm-day-lbl">W</div>
+      <div class="hm-day-lbl"></div>
+      <div class="hm-day-lbl">F</div>
+      <div class="hm-day-lbl"></div>
+    </div>
+    <div class="heatmap-wrap" style="flex:1">
+      <div id="resMonths" style="display:flex;gap:4px;height:14px;margin-bottom:2px;"></div>
+      <div class="heatmap-grid" id="resGrid"><div class="res-loading">Loading…</div></div>
+    </div>
   </div>
   <div class="heatmap-legend">
-    <span>Moins</span>
+    <span>Less</span>
     <div class="hm-cell" style="background:var(--bg3)"></div>
     <div class="hm-cell" style="background:rgba(239,68,68,0.55)"></div>
     <div class="hm-cell" style="background:rgba(245,158,11,0.55)"></div>
     <div class="hm-cell" style="background:rgba(34,197,94,0.55)"></div>
     <div class="hm-cell" style="background:rgba(34,197,94,1)"></div>
-    <span>Plus</span>
+    <span>More</span>
+    <div class="hm-cell" style="box-shadow:inset 0 0 0 2px rgba(239,68,68,0.85);"></div>
+    <span>Al-ʿAhd ⚠</span>
   </div>
 
 </div>
@@ -753,15 +769,10 @@ nav {
 <script>
 const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
 
-// 0=dim 1=lun 2=mar 3=mer 4=jeu 5=ven 6=sam
+// 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
 const VARIABLE_HABITS = {
-  1: [
-    { id:'var_deep_extra',  name:'Deep work +1h',    desc:'2h de deep work aujourd\'hui',  weight:2 },
-    { id:'var_csaa_extra',  name:'CSAA +30min',      desc:'2h de révision aujourd\'hui',   weight:2 },
-  ],
   0: [
-    { id:'var_arabe',       name:'Cours arabe',      desc:'Session avec la prof — 1h30',   weight:3 },
-    { id:'var_csaa_extra',  name:'CSAA +30min',      desc:'2h de révision aujourd\'hui',   weight:2 },
+    { id:'var_arabe', name:'Arabic class', desc:'Session with teacher — 1h30', weight:3 },
   ],
 };
 
@@ -778,57 +789,56 @@ function saveMuscuEntry(kg_sdt, kg_dips){
 }
 
 const HABITS = [
-  { id:'wake_6h',           name:'Réveil 6h',               desc:'Ne pas se rendormir après Fajr',                   weight:2 },
-  { id:'hifz_farj',        name:'Ḥifẓ al-farj',           desc:'Préservation de la pudeur · Coran 24:30',          weight:3, punitive:true },
-  { id:'quran_15min',      name:'Coran 15 min',            desc:'Lecture ou écoute quotidienne',                    weight:3 },
-  { id:'scapula',          name:'Scapula',                 desc:'Exercices cou et scapula',                         weight:3 },
-  { id:'family_contact',   name:'Contact famille',         desc:'Appel ou message',                                 weight:2 },
-  { id:'supplements',      name:'Suppléments',             desc:'Créatine · D3 · Magnésium', max:3, xp:20 },
-  { id:'eng_grammar',      name:'Grammar Murphy',          desc:'Livre Murphy — 25 min',                           weight:3 },
-  { id:'eng_anki',         name:'Anki vocab',              desc:'Flashcards — 15 min',                             weight:3 },
-  { id:'eng_write',        name:'TEDx + debrief',          desc:'Écoute TEDx + debrief avec Claude — 20 min',      weight:3 },
-  { id:'deep_work',        name:'Deep work',               desc:'Travail concentré — 1h',                          weight:3 },
-  { id:'csaa',             name:'CSAA',                    desc:'Révision — 1h30',                                  weight:3, startDate:'2026-07-21' },
-  { id:'no_youtube',       name:'Pas de YouTube',          desc:'Zéro vidéo passive — podcasts et lecture uniquement', weight:2 },
-  { id:'no_music',         name:'Pas de musique',          desc:'Silence et dhikr — tranquillité d\'esprit',       weight:2 },
-  { id:'steps_12k',        name:'12 000 pas',              desc:'Activité quotidienne minimum',                     weight:3 },
+  { id:'wake_6h',           name:'Wake 6am',               desc:'Don\'t go back to sleep after Fajr',               weight:2 },
+  { id:'hifz_farj',        name:'Al-ʿAhd',                desc:'Personal covenant',                                weight:5, punitive:true },
+  { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
+  { id:'scapula',          name:'Scapula',                 desc:'Neck & scapula exercises',                         weight:3 },
+  { id:'family_contact',   name:'Family',                  desc:'Call or message',                                  weight:2 },
+  { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium', max:3, xp:20 },
+  { id:'eng_grammar',      name:'English',                 desc:'Grammar · practice with teacher',                  weight:3 },
+  { id:'eng_anki',         name:'Anki',                   desc:'Daily flashcard deck',                             weight:3 },
+  { id:'eng_write',        name:'English content',         desc:'Podcast or video — 20 min',                        weight:3 },
+  { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, punitive:true, startDate:'2026-07-21' },
+  { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — podcasts & reading only',      weight:2 },
+  { id:'no_music',         name:'No music',                desc:'Silence & dhikr — peace of mind',                  weight:2 },
+  { id:'steps_12k',        name:'12,000 steps',            desc:'Daily minimum activity',                           weight:3 },
 ];
 
 const DEEN = [
-  { id:'salah_waqt',    name:'Ṣalāh — à l\'heure',      desc:'5 prières dans les temps',                     max:1, xp:150 },
-  { id:'adhkars',       name:'Adhkārs matin & soir',     desc:'Sayyid al-Istighfār · Protection',             max:2, xp:70  },
-  { id:'ayat_kursi',    name:'Āyat al-Kursī',            desc:'Verset du Trône — matin et soir',              max:2, xp:30  },
-  { id:'sourates_prot', name:'Protection 3 sourates',    desc:'Al-Ikhlāṣ · Al-Falaq · An-Nās (×3)',          max:1, xp:65  },
-  { id:'dhikr_rapide',  name:'Dhikr rapide',             desc:'Dhikr libre du cœur · matin et soir',         max:2, xp:15  },
-  { id:'dhikr_salah',   name:'Dhikr post-ṣalāh',        desc:'Tasbīḥ 33× — après chaque prière',            max:5, xp:25  },
-  { id:'hifz_sourate',  name:'Ḥifẓ — sourate',           desc:'Mémorisation Coran — 15 min minimum',          max:1, xp:75  },
-  { id:'lecture_islam', name:'Lecture islamique',         desc:'Livre de fiqh, sīra, ʿaqīda — 20 min minimum', max:1, xp:55  },
-  { id:'ilm',           name:'Ṭalab al-ʿIlm',            desc:'Cours · conférence · lecture islamique · obligation',  max:1, xp:45  },
-  { id:'mosquee',       name:'Mosquée — jamāʿa',         desc:'Prière en congrégation',                      max:1, xp:100 },
-  { id:'sadaqa',        name:'Ṣadaqa du jour',           desc:'Aumône · même symbolique',                   max:1, xp:45  },
-  { id:'tahajjud',      name:'Tahajjud',                  desc:'Prière de nuit — dernier tiers',             max:1, xp:110 },
-  { id:'tawbah',        name:'Tawbah — repentir',        desc:'Istighfār sincère · 3 minutes',              max:1, xp:40  },
+  { id:'salah_waqt',    name:'Ṣalāh — on time',         desc:'5 prayers on time',                            max:1, xp:150 },
+  { id:'adhkars',       name:'Adhkārs morning & evening',desc:'Sayyid al-Istighfār · Protection',             max:2, xp:70  },
+  { id:'ayat_kursi',    name:'Āyat al-Kursī',            desc:'Verse of the Throne — morning & evening',      max:2, xp:30  },
+  { id:'sourates_prot', name:'Protection 3 sūrahs',      desc:'Al-Ikhlāṣ · Al-Falaq · An-Nās (×3)',          max:1, xp:65  },
+  { id:'dhikr_rapide',  name:'Free dhikr',               desc:'Heartfelt dhikr · morning & evening',          max:2, xp:15  },
+  { id:'dhikr_salah',   name:'Dhikr post-ṣalāh',        desc:'Tasbīḥ 33× — after each prayer',               max:5, xp:25  },
+  { id:'hifz_sourate',  name:'Ḥifẓ — sūrah',            desc:'Quran memorisation — 15 min minimum',           max:1, xp:75  },
+  { id:'lecture_islam', name:'Islamic reading',           desc:'Fiqh, sīra, ʿaqīda — 20 min minimum',         max:1, xp:55  },
+  { id:'ilm',           name:'Ṭalab al-ʿIlm',            desc:'Class · lecture · Islamic reading',             max:1, xp:45  },
+  { id:'mosquee',       name:'Mosque — jamāʿa',          desc:'Prayer in congregation',                       max:1, xp:100 },
+  { id:'sadaqa',        name:'Ṣadaqa',                   desc:'Daily charity · even symbolic',                max:1, xp:45  },
+  { id:'tahajjud',      name:'Tahajjud',                  desc:'Night prayer — last third',                   max:1, xp:110 },
+  { id:'tawbah',        name:'Tawbah',                   desc:'Sincere istighfār · 3 minutes',               max:1, xp:40  },
 ];
 
 const BONUS = [
-  { id:'bjj',    name:'BJJ',           desc:'Cours — Brazilian Jiu-Jitsu',       weight:3 },
-  { id:'muscu',  name:'Muscu',         desc:'Séance de musculation',              weight:2 },
-  { id:'najah',  name:'Cours Najah',   desc:'Session avec le Sheikh — 4/sem',    weight:3, max:4 },
-  { id:'preply', name:'Cours Preply',  desc:'1h avec professeur natif',           weight:3 },
+  { id:'bjj',    name:'BJJ',           desc:'Class — Brazilian Jiu-Jitsu',       weight:3 },
+  { id:'muscu',  name:'Muscu',         desc:'Strength training session',          weight:2 },
+  { id:'najah',  name:'Najah class',   desc:'Session with the Sheikh — 4/week',  weight:3, max:4 },
+  { id:'preply', name:'Preply class',  desc:'1h with native speaker',             weight:3 },
 ];
-const CHEAT = { id:'cheat', name:'Cheat meal', desc:'Repas hors plan — tracking uniquement' };
+const CHEAT = { id:'cheat', name:'Cheat meal', desc:'Off-plan meal — tracking only' };
 
 const RAWATIB = [
-  { id:'raw_fajr',        name:'Sunnah al-Fajr',          desc:'2 rakʿahs avant Fajr',                xp:50 },
-  { id:'raw_dhuhr_qab',   name:'Sunnah Dhuhr qabliyya',   desc:'4 rakʿahs avant Dhuhr',               xp:35 },
-  { id:'raw_dhuhr_bad',   name:'Sunnah Dhuhr baʿdiyya',   desc:'2 rakʿahs après Dhuhr',               xp:25 },
-  { id:'raw_asr',         name:'Sunnah ʿAṣr',             desc:'4 rakʿahs avant ʿAṣr',                xp:25 },
-  { id:'raw_maghrib_qab', name:'Sunnah Maghrib qabliyya', desc:'2 rakʿahs avant Maghrib',             xp:20 },
-  { id:'raw_maghrib_bad', name:'Sunnah Maghrib baʿdiyya', desc:'2 rakʿahs après Maghrib',             xp:30 },
-  { id:'raw_awwabeen',    name:'Ṣalāt al-Awwābīn',        desc:'6 rakʿahs après Maghrib',             xp:40 },
-  { id:'raw_isha',        name:'Sunnah ʿIshāʾ baʿdiyya',  desc:'2 rakʿahs après ʿIshāʾ',             xp:25 },
-  { id:'raw_witr',        name:'Witr',                     desc:'1-3 rakʿahs · avant le sommeil',      xp:70 },
-  { id:'raw_duha',        name:'Ṣalāt aḍ-Ḍuḥā',          desc:'2-8 rakʿahs · après lever du soleil', xp:50 },
+  { id:'raw_fajr',        name:'Sunnah al-Fajr',          desc:'2 rakʿahs before Fajr',               xp:50 },
+  { id:'raw_dhuhr_qab',   name:'Sunnah Dhuhr qabliyya',   desc:'4 rakʿahs before Dhuhr',              xp:35 },
+  { id:'raw_dhuhr_bad',   name:'Sunnah Dhuhr baʿdiyya',   desc:'2 rakʿahs after Dhuhr',               xp:25 },
+  { id:'raw_asr',         name:'Sunnah ʿAṣr',             desc:'4 rakʿahs before ʿAṣr',               xp:25 },
+  { id:'raw_maghrib_qab', name:'Sunnah Maghrib qabliyya', desc:'2 rakʿahs before Maghrib',            xp:20 },
+  { id:'raw_maghrib_bad', name:'Sunnah Maghrib baʿdiyya', desc:'2 rakʿahs after Maghrib',             xp:30 },
+  { id:'raw_awwabeen',    name:'Ṣalāt al-Awwābīn',        desc:'6 rakʿahs after Maghrib',             xp:40 },
+  { id:'raw_isha',        name:'Sunnah ʿIshāʾ baʿdiyya',  desc:'2 rakʿahs after ʿIshāʾ',             xp:25 },
+  { id:'raw_witr',        name:'Witr',                     desc:'1–3 rakʿahs · before sleep',          xp:70 },
+  { id:'raw_duha',        name:'Ṣalāt aḍ-Ḍuḥā',          desc:'2–8 rakʿahs · after sunrise',         xp:50 },
 ];
 
 const CARDS = {
@@ -983,19 +993,35 @@ function renderResilience(){
   for(let i=0;i<firstDow;i++) cells.push(null);
   dates.forEach(d=>cells.push(d));
 
+  // Month labels
+  const totalCols = Math.ceil(cells.length / 7);
+  const colW = 20; // 16px cell + 4px gap
+  let prevMonth = -1;
+  const monthHtml = [];
+  for(let col=0; col<totalCols; col++){
+    const d = cells[col*7];
+    if(d && d.getMonth()!==prevMonth){
+      prevMonth = d.getMonth();
+      monthHtml.push(`<div style="width:${colW}px;font-size:9px;color:var(--muted);overflow:hidden;white-space:nowrap;flex-shrink:0">${d.toLocaleDateString('en',{month:'short'})}</div>`);
+    } else {
+      monthHtml.push(`<div style="width:${colW}px;flex-shrink:0"></div>`);
+    }
+  }
+  document.getElementById('resMonths').innerHTML = monthHtml.join('');
+
   document.getElementById('resGrid').innerHTML = cells.map(d=>{
     if(!d) return '<div class="hm-cell empty"></div>';
     const key = fmtDate(d);
     const entry = key >= RES_START_DATE ? resData[key] : null;
-    let bg = 'var(--bg3)', label = `${key} — pas de donnée`;
+    let bg = 'var(--bg3)', label = `${key} — no data`, extra = '';
     const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
     const isDayOffKey = localStorage.getItem('dayoff_'+key) === '1';
     if(isVacance){
-      bg = 'rgba(255,255,255,0.55)'; label = `${key} — ✈️ vacances`;
+      bg = 'rgba(255,255,255,0.55)'; label = `${key} — ✈️ vacation`;
     } else if(isDayOffKey){
       bg = 'rgba(251,191,36,0.5)'; label = `${key} — ☀️ day off`;
     } else if(entry && entry.sick){
-      bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 malade`;
+      bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 sick`;
     } else if(entry && entry.s!=null){
       const score = entry.s;
       if(score>=80) bg = `rgba(34,197,94,${0.55+score/100*0.45})`;
@@ -1003,7 +1029,17 @@ function renderResilience(){
       else if(score>0) bg = `rgba(239,68,68,${0.55+score/100*0.45})`;
       label = `${key} — ${score}%`;
     }
-    return `<div class="hm-cell" style="background:${bg}" title="${label}"></div>`;
+    // Al-ʿAhd violation indicator
+    if(!isVacance && !isDayOffKey && !(entry&&entry.sick)){
+      try{
+        const hp=JSON.parse(localStorage.getItem('hs_'+key)||'{}');
+        if(hp.hs && hp.hs.hifz_farj===false || (hp.hs && hp.hs.hifz_farj===0)){
+          extra='box-shadow:inset 0 0 0 2px rgba(239,68,68,0.9);';
+          label+=' · ⚠️ al-ʿAhd';
+        }
+      }catch(e){}
+    }
+    return `<div class="hm-cell" style="background:${bg};${extra}" title="${label}"></div>`;
   }).join('');
 
   const scores = Object.values(resData).filter(e=>e && !e.sick && e.s!=null).map(e=>e.s);
@@ -1033,11 +1069,11 @@ function isSickDay(){ return localStorage.getItem('sick_'+currentDate) === '1'; 
 
 function askSick(){
   const marking = !isSickDay();
-  document.getElementById('sickTitle').textContent = marking ? 'Marquer ce jour comme malade ?' : 'Annuler le statut malade ?';
+  document.getElementById('sickTitle').textContent = marking ? 'Mark this day as sick?' : 'Remove sick status?';
   document.getElementById('sickMsg').textContent = marking
-    ? 'Le score du jour sera neutralisé — il ne comptera ni positivement ni négativement dans ta résilience.'
-    : 'Le score normal sera de nouveau calculé pour ce jour.';
-  document.getElementById('sickConfirm').textContent = marking ? 'Confirmer' : 'Annuler le statut';
+    ? 'The day\'s score will be neutralised — it won\'t count for or against your resilience.'
+    : 'Normal score will be calculated again for this day.';
+  document.getElementById('sickConfirm').textContent = marking ? 'Confirm' : 'Remove status';
   document.getElementById('sickOverlay').classList.add('show');
 }
 
@@ -1254,7 +1290,7 @@ function applyDayOffUI(){
     btn.disabled = false;
   } else {
     const d = dayoffDaysLeft();
-    btn.textContent = `Day Off — ${d}j`;
+    btn.textContent = `Day Off — ${d}d`;
     btn.disabled = true;
   }
   document.getElementById('dayoffBanner').classList.toggle('active', active);
@@ -1307,11 +1343,11 @@ function xpDeenVoyage(){
 
 function askVoyage(){
   const entering = !voyageMode;
-  document.getElementById('voyTitle').textContent = entering ? 'Activer le Mode Voyage ?' : 'Quitter le Mode Voyage ?';
+  document.getElementById('voyTitle').textContent = entering ? 'Enable Travel Mode?' : 'Exit Travel Mode?';
   document.getElementById('voyMsg').textContent = entering
-    ? 'Le score sera calculé sur les piliers uniquement : Hifz, Coran 15min, Anki, 12K pas, Ṣalāh, Adhkārs, Āyat al-Kursī, Witr.'
-    : 'Retour au mode normal — tous les habits et items DEEN reprennent leur place.';
-  document.getElementById('voyConfirm').textContent = entering ? 'Activer' : 'Désactiver';
+    ? 'Score calculated on pillars only: Al-ʿAhd, Quran, Anki, 12K steps, Ṣalāh, Adhkārs, Āyat al-Kursī, Witr.'
+    : 'Back to normal mode — all habits and DEEN items restored.';
+  document.getElementById('voyConfirm').textContent = entering ? 'Enable' : 'Disable';
   document.getElementById('voyOverlay').classList.add('show');
 }
 
@@ -1592,13 +1628,13 @@ async function pushHabits(){
   const score=scoreJour();
   const bonusDone=BONUS.filter(b=>{ const v=typeof hs[b.id]==='number'?hs[b.id]:(hs[b.id]?1:0); return v>0; });
   let content=sick
-    ? `# HABITS — ${d}\n\n**MALADE: OUI**\n**Score : neutralisé (jour malade)**\n\n`
-    : `# HABITS — ${d}\n\n**Score : ${score}%**\n**DEEN XP : ${xp} / 500**\n\n`;
-  if(note.trim()) content+=`## Note du jour\n\n> ${note.trim()}\n\n`;
-  content+=`## Rituels\n\n`;
+    ? `# HABITS — ${d}\n\n**SICK: YES**\n**Score: neutralised (sick day)**\n\n`
+    : `# HABITS — ${d}\n\n**Score: ${score}%**\n**DEEN XP: ${xp} / 500**\n\n`;
+  if(note.trim()) content+=`## Daily note\n\n> ${note.trim()}\n\n`;
+  content+=`## Habits\n\n`;
   activeHabits(HABITS).forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});
   const vh=todayVarHabits();
-  if(vh.length){content+=`\n### Programme du jour\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
+  if(vh.length){content+=`\n### Today\n\n`;vh.forEach(h=>{content+=`- ${hs[h.id]?'✅':'❌'} ${h.name}\n`;});}
   if(bonusDone.length){content+=`\n## Bonus\n\n`;bonusDone.forEach(b=>{
     const v=typeof hs[b.id]==='number'?hs[b.id]:(hs[b.id]?1:0);
     content+=`- ✅ ${b.name}${b.max&&b.max>1?` (${v}/${b.max})`:''}\n`;
@@ -1610,8 +1646,8 @@ async function pushHabits(){
   if(rawDone.length){content+=`\n### Rawātib\n\n`;RAWATIB.forEach(r=>{content+=`- ${rs[r.id]?'✅':'❌'} ${r.name} | XP: +${rs[r.id]?r.xp:0}\n`;});}
   const md=xp>=500;
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
-  content+=md?`- ⭐ Objectif DEEN atteint\n`:`- ${500-Math.min(xp,500)} XP manquants\n`;
-  content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'OUI':'NON'}\n`;
+  content+=md?`- ⭐ DEEN goal reached\n`:`- ${500-Math.min(xp,500)} XP remaining\n`;
+  content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'YES':'NO'}\n`;
   content+=`<!-- STATE:${JSON.stringify({hs,ds,rs,ss})} -->`;
   const body=JSON.stringify({content,date:d,section:'HABITS'});
   let ok=false;
