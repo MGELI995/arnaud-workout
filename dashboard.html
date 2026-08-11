@@ -1378,7 +1378,9 @@ function tB(id){
   const b=BONUS.find(x=>x.id===id);
   if(b&&b.max&&b.max>1){ hs[id]=((hs[id]||0)>=b.max)?0:(hs[id]||0)+1; }
   else{ hs[id]=!hs[id]; }
-  saveHL(); renderBonus(); renderXP(); pushHabits();
+  // Preply session auto-checks English habit
+  if(id==='preply' && hs['preply']) hs['eng_grammar']=true;
+  saveHL(); renderHabits(); renderBonus(); renderXP(); pushHabits();
 }
 function tCheat(){ss[CHEAT.id]=!ss[CHEAT.id];saveHL();renderBonus();pushHabits();}
 
