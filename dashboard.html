@@ -574,6 +574,15 @@ nav {
 .muscu-input:focus { border-color:var(--green); }
 .muscu-unit { font-size:11px; color:var(--muted); }
 
+/* ── ASHWAGANDHA ── */
+.ashwa-stat { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--bg2); font-size:13px; }
+.ashwa-stat:last-of-type { border-bottom:none; }
+.ashwa-phase { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--bg2); }
+.ashwa-phase:last-child { border-bottom:none; }
+.ashwa-phase-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.ashwa-cell { width:18px; height:18px; border-radius:4px; border:1px solid rgba(255,255,255,0.06); }
+.ashwa-phase.active-phase > div:first-child { box-shadow:0 0 0 2px rgba(34,197,94,0.4); }
+
 /* ── TOAST ── */
 .toast {
   position: fixed;
@@ -755,6 +764,112 @@ nav {
 </div>
 </div>
 
+<!-- ═══════════ ASHWAGANDHA VIEW ═══════════ -->
+<div class="view" id="v-ashwa">
+<div class="content">
+
+  <div style="padding:18px 0 6px">
+    <div style="font-size:18px;font-weight:700;color:var(--text)">🌿 Ashwagandha</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:3px">KSM-66 · 600 mg · 30-day self-experiment</div>
+  </div>
+
+  <!-- Day counter -->
+  <div style="display:flex;gap:0;padding:16px 0 4px">
+    <div style="flex:1;text-align:center">
+      <div style="font-size:28px;font-weight:700;color:var(--text)" id="ashwaDayNum">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">DAY / 30</div>
+    </div>
+    <div style="width:1px;background:var(--bg2);flex-shrink:0"></div>
+    <div style="flex:1;text-align:center">
+      <div style="font-size:28px;font-weight:700" id="ashwaComplianceNum">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">COMPLIANCE</div>
+    </div>
+    <div style="width:1px;background:var(--bg2);flex-shrink:0"></div>
+    <div style="flex:1;text-align:center">
+      <div style="font-size:28px;font-weight:700;color:var(--text)" id="ashwaStreakNum">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">STREAK</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div style="height:4px;background:var(--bg2);border-radius:2px;margin:10px 0 20px">
+    <div id="ashwaBar" style="height:4px;background:var(--green);border-radius:2px;width:0%;transition:width .4s"></div>
+  </div>
+
+  <!-- Today's dose -->
+  <div class="section" style="padding-top:4px">Today</div>
+  <div id="ashwaTodayRow" onclick="toggleAshwa()" style="display:flex;align-items:center;gap:14px;padding:13px 8px;cursor:pointer;border-radius:8px;margin:0 -8px;transition:background .1s">
+    <div id="ashwaCircle" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s"></div>
+    <div>
+      <div style="font-size:14px;color:var(--text)" id="ashwaTodayLabel">Dose taken</div>
+      <div style="font-size:11px;color:var(--muted)">600 mg · morning with food</div>
+    </div>
+  </div>
+
+  <!-- 30-day heatmap -->
+  <div class="section">30-day log</div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 20px" id="ashwaGrid"></div>
+
+  <!-- Timeline -->
+  <div class="section">Expected timeline</div>
+  <div style="padding:4px 0 8px">
+    <div class="ashwa-phase" id="aphase1">
+      <div class="ashwa-phase-dot" style="background:rgba(245,158,11,0.7)"></div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 1–2 · Adaptation</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">HPA axis adapts · cortisol begins declining · no visible effect yet</div>
+      </div>
+    </div>
+    <div class="ashwa-phase" id="aphase2">
+      <div class="ashwa-phase-dot" style="background:rgba(245,158,11,0.9)"></div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 3–4 · First effects</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Stress −30% · sleep quality +50% · subjective recovery improves</div>
+      </div>
+    </div>
+    <div class="ashwa-phase" id="aphase3">
+      <div class="ashwa-phase-dot" style="background:rgba(34,197,94,0.7)"></div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 5–8 · Peak effects</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Muscle recovery markers peak · VO2max · testosterone plateaux</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Research data -->
+  <div class="section">Research data (KSM-66 · RCTs)</div>
+  <div style="padding:4px 0 8px">
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Cortisol reduction</span><span style="font-weight:600;color:#f87171">−27%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Sleep quality (PSQI score)</span><span style="font-weight:600;color:var(--green)">+72%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Anxiety (GAD-7)</span><span style="font-weight:600;color:var(--green)">−44%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Muscle recovery speed</span><span style="font-weight:600;color:var(--green)">+11%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">VO₂max (athletes)</span><span style="font-weight:600;color:var(--green)">+12%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Testosterone (men)</span><span style="font-weight:600;color:var(--green)">+17%</span></div>
+    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">HRV (indirect via cortisol)</span><span style="font-weight:600;color:var(--green)">+~8%</span></div>
+    <div style="font-size:10px;color:var(--dim);margin-top:10px;line-height:1.6">Sources: Chandrasekhar (2012), Langade (2019), Wankhede (2015), Choudhary (2015) · 600 mg/day KSM-66 · 60–90 days</div>
+  </div>
+
+  <!-- Notes -->
+  <div class="section">Daily note</div>
+  <div class="note-wrap" style="margin-bottom:20px">
+    <textarea class="note" id="ashwaNoteEl" placeholder="Recovery feeling, sleep, stress level…" oninput="saveAshwaNote()"></textarea>
+  </div>
+
+</div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <button class="tab active" id="tab-habits" onclick="showView('habits')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Habits
+  </button>
+  <button class="tab" id="tab-ashwa" onclick="showView('ashwa')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+    Ashwa
+  </button>
+</nav>
+
 <!-- OVERLAY -->
 <div class="overlay" id="overlay">
   <div class="ov-header">
@@ -795,6 +910,7 @@ const HABITS = [
   { id:'scapula',          name:'Scapula',                 desc:'Neck & scapula exercises',                         weight:3 },
   { id:'family_contact',   name:'Family',                  desc:'Call or message',                                  weight:2 },
   { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium', max:3, xp:20 },
+  { id:'ashwagandha',      name:'Ashwagandha',             desc:'KSM-66 · 600 mg · evening',                weight:2 },
   { id:'eng_grammar',      name:'English',                 desc:'Grammar · practice with teacher',                  weight:3 },
   { id:'eng_anki',         name:'Anki',                   desc:'Daily flashcard deck',                             weight:3 },
   { id:'eng_write',        name:'English content',         desc:'Podcast or video — 20 min',                        weight:3 },
@@ -1661,6 +1777,96 @@ async function pushHabits(){
   if(hPushQueued){hPushQueued=false;pushHabits();}
 }
 
+
+// ─── VIEW SWITCHING ───
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  document.getElementById('tab-'+v).classList.add('active');
+  if(v==='ashwa') renderAshwa();
+}
+
+// ─── ASHWAGANDHA ───
+const ASHWA_START = '2026-08-12';
+const ASHWA_DAYS  = 30;
+
+function getAshwaData(){ try{return JSON.parse(localStorage.getItem('ashwa_data')||'{}');}catch(e){return {};} }
+function saveAshwaNote(){ localStorage.setItem('ashwa_note_'+currentDate, document.getElementById('ashwaNoteEl').value); }
+
+function toggleAshwa(){
+  const data = getAshwaData();
+  data[currentDate] = !data[currentDate];
+  localStorage.setItem('ashwa_data', JSON.stringify(data));
+  renderAshwa();
+}
+
+function renderAshwa(){
+  const data  = getAshwaData();
+  const today = currentDate;
+  const taken = data[today];
+
+  // Circle
+  const circle = document.getElementById('ashwaCircle');
+  circle.style.background = taken ? 'var(--green)' : '';
+  circle.style.borderColor = taken ? 'var(--green)' : 'var(--dim)';
+  circle.innerHTML = taken ? CHECK_SVG : '';
+  document.getElementById('ashwaTodayLabel').style.textDecoration = taken ? 'line-through' : 'none';
+  document.getElementById('ashwaTodayLabel').style.color = taken ? 'var(--muted)' : 'var(--text)';
+
+  // Day number
+  const start  = new Date(ASHWA_START+'T12:00:00');
+  const todayD = new Date(today+'T12:00:00');
+  const diffMs = todayD - start;
+  const dayNum = diffMs < 0 ? 0 : Math.min(Math.floor(diffMs/(1000*60*60*24))+1, ASHWA_DAYS);
+  document.getElementById('ashwaDayNum').textContent = dayNum > 0 ? dayNum : '—';
+
+  // Compliance
+  let taken_count = 0, elapsed = 0;
+  for(let i=0; i<ASHWA_DAYS; i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = d.toISOString().split('T')[0];
+    if(key > today) break;
+    elapsed++;
+    if(data[key]) taken_count++;
+  }
+  const compliance = elapsed > 0 ? Math.round(taken_count/elapsed*100) : 0;
+  const compEl = document.getElementById('ashwaComplianceNum');
+  compEl.textContent = elapsed > 0 ? compliance+'%' : '—';
+  compEl.style.color = compliance>=80?'var(--green)':compliance>=60?'#f59e0b':'#ef4444';
+
+  // Streak
+  let streak = 0;
+  for(let i=dayNum-1; i>=0; i--){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = d.toISOString().split('T')[0];
+    if(data[key]) streak++; else break;
+  }
+  document.getElementById('ashwaStreakNum').textContent = streak;
+
+  // Progress bar
+  document.getElementById('ashwaBar').style.width = (dayNum/ASHWA_DAYS*100)+'%';
+
+  // 30-day grid
+  const grid = document.getElementById('ashwaGrid');
+  grid.innerHTML = Array.from({length: ASHWA_DAYS}, (_,i)=>{
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = d.toISOString().split('T')[0];
+    const isFuture = key > today;
+    const bg = isFuture ? 'var(--bg2)' : data[key] ? 'var(--green)' : 'rgba(239,68,68,0.4)';
+    const border = key===today ? '2px solid var(--green)' : '1px solid rgba(255,255,255,0.06)';
+    return `<div class="ashwa-cell" style="background:${bg};border:${border}" title="Day ${i+1} — ${key}"></div>`;
+  }).join('');
+
+  // Active phase highlight
+  ['aphase1','aphase2','aphase3'].forEach(id=>document.getElementById(id).classList.remove('active-phase'));
+  if(dayNum>=1  && dayNum<=14) document.getElementById('aphase1').classList.add('active-phase');
+  if(dayNum>=15 && dayNum<=28) document.getElementById('aphase2').classList.add('active-phase');
+  if(dayNum>=29)               document.getElementById('aphase3').classList.add('active-phase');
+
+  // Note
+  document.getElementById('ashwaNoteEl').value = localStorage.getItem('ashwa_note_'+today)||'';
+}
 
 async function init(){
   currentDate = date();
