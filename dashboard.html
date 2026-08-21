@@ -920,8 +920,7 @@ const HABITS = [
   { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
   { id:'scapula',          name:'Scapula',                 desc:'Neck & scapula exercises',                         weight:3 },
   { id:'family_contact',   name:'Family',                  desc:'Call or message',                                  weight:2 },
-  { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium', max:3, xp:20 },
-  { id:'ashwagandha',      name:'Ashwagandha',             desc:'KSM-66 · 600 mg · evening',                weight:2 },
+  { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium · Ashwagandha', max:4, weight:4, xp:20 },
   { id:'eng_grammar',      name:'English',                 desc:'Grammar · practice with teacher',                  weight:3 },
   { id:'eng_anki',         name:'Anki',                   desc:'Daily flashcard deck',                             weight:3 },
   { id:'eng_write',        name:'Silicon Valley',           desc:'1 ep max · binge = punitive',                      weight:3, binge:true },
@@ -1231,6 +1230,7 @@ function scoreJour() {
     total+=w;
     if(h.slider){ done+=w*(val/h.sliderMax); }
     else if(h.binge){ if(val===1) done+=w; else if(val===2) done-=w; }
+    else if(h.max&&h.max>1){ done+=w*(val/h.max); }
     else if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
