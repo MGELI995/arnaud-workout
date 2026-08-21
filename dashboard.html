@@ -687,7 +687,7 @@ nav {
     </div>
   </div>
 
-  <div class="section">Daily</div>
+  <div class="section" id="sectionDaily">Daily</div>
   <div id="hlist"></div>
 
   <div id="var-section" style="display:none">
@@ -1331,14 +1331,30 @@ function habitRow(h) {
   </div>`;
 }
 
+function habitRowVoyage(h) {
+  const done = h.slider ? (hs[h.id]||0) > 0 : !!hs[h.id];
+  const label = h.slider && (hs[h.id]||0) > 0
+    ? (h.sliderStep>=100 ? (hs[h.id]/1000).toFixed(1)+'k steps' : hs[h.id]+'min')
+    : h.name;
+  return `<div onclick="tH('${h.id}')" style="display:flex;align-items:center;gap:14px;padding:16px 12px;border-radius:10px;background:${done?'rgba(34,197,94,0.06)':'var(--bg2)'};border:1px solid ${done?'rgba(34,197,94,0.2)':'var(--bg3)'};margin-bottom:8px;cursor:pointer;transition:all .15s">
+    <div style="width:22px;height:22px;border-radius:50%;border:1.5px solid ${done?'var(--green)':'var(--dim)'};background:${done?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">${done?CHECK_SVG:''}</div>
+    <div style="font-size:14px;font-weight:500;color:${done?'var(--muted)':'var(--text)'};${done?'text-decoration:line-through':''}">${label}</div>
+  </div>`;
+}
+
 function renderHabits() {
   const dayOff = isDayOff();
-  const base = dayOff ? [] : voyageMode ? HABITS.filter(h=>VOYAGE_HABITS.includes(h.id)) : HABITS;
-  const list = activeHabits(base);
+  if(voyageMode){
+    const list = HABITS.filter(h=>VOYAGE_HABITS.includes(h.id));
+    document.getElementById('hlist').innerHTML = list.map(habitRowVoyage).join('');
+    document.getElementById('var-section').style.display = 'none';
+    return;
+  }
+  const base = dayOff ? [] : activeHabits(HABITS);
   document.getElementById('hlist').innerHTML = dayOff
     ? '<div style="padding:12px 0;color:var(--muted);font-size:12px;text-align:center">☀️ Day Off — repose-toi</div>'
-    : list.map(habitRow).join('');
-  const varList = (dayOff || voyageMode) ? [] : todayVarHabits();
+    : base.map(habitRow).join('');
+  const varList = dayOff ? [] : todayVarHabits();
   const varEl = document.getElementById('vlist');
   const varSection = document.getElementById('var-section');
   if(varList.length){
@@ -1485,16 +1501,17 @@ let voyageMode = localStorage.getItem('voyage_mode') === '1';
 function applyVoyageUI(){
   document.getElementById('voyBanner').classList.toggle('active', voyageMode);
   document.getElementById('voyageBtn').classList.toggle('active', voyageMode);
+  document.getElementById('sectionDaily').textContent = voyageMode ? '✈️ Travel mode' : 'Daily';
 }
 
 function scoreJourVoyage(){
-  // Hifz punitif même en voyage
   const items = HABITS.filter(h => VOYAGE_HABITS.includes(h.id));
   let total=0, done=0;
   items.forEach(h=>{
     const w=h.weight||1; total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
-    if(val>0) done+=w;
+    if(h.slider){ done+=w*(val/h.sliderMax); }
+    else if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
   return total>0?Math.min(100,Math.round(done/total*100)):0;
