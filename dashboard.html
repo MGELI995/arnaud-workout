@@ -924,7 +924,7 @@ const HABITS = [
   { id:'eng_grammar',      name:'English',                 desc:'Grammar · practice with teacher',                  weight:3 },
   { id:'eng_anki',         name:'Anki',                   desc:'Daily flashcard deck',                             weight:3 },
   { id:'eng_write',        name:'Silicon Valley',           desc:'1 ep max · binge = punitive',                      weight:3, binge:true },
-  { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, slider:true, sliderMax:120, startDate:'2026-07-21' },
+  { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, slider:true, sliderMax:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
   { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — podcasts & reading only',      weight:2 },
   { id:'no_music',         name:'No music',                desc:'Silence & dhikr — peace of mind',                  weight:2 },
   { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:15000, sliderStep:500 },
@@ -1492,9 +1492,9 @@ function toggleDayOff(){
 }
 
 // ─── MODE VOYAGE ───
-const VOYAGE_HABITS = ['hifz_farj','quran_15min','eng_grammar','steps_12k','scapula'];
-const VOYAGE_DEEN   = ['salah_waqt','adhkars','ayat_kursi'];
-const VOYAGE_RAW    = ['raw_witr'];
+const VOYAGE_HABITS = ['hifz_farj','quran_15min','csaa','eng_anki','eng_write','steps_12k'];
+const VOYAGE_DEEN   = ['salah_waqt'];
+const VOYAGE_RAW    = [];
 
 let voyageMode = localStorage.getItem('voyage_mode') === '1';
 
@@ -1510,7 +1510,8 @@ function scoreJourVoyage(){
   items.forEach(h=>{
     const w=h.weight||1; total+=w;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
-    if(h.slider){ done+=w*(val/h.sliderMax); }
+    if(h.slider){ const max=h.sliderMaxVoyage||h.sliderMax; done+=w*(Math.min(val,max)/max); }
+    else if(h.binge){ if(val===1) done+=w; else if(val===2) done-=w; }
     else if(val>0) done+=w;
     else if(h.punitive) done-=w;
   });
@@ -1528,7 +1529,7 @@ function askVoyage(){
   const entering = !voyageMode;
   document.getElementById('voyTitle').textContent = entering ? 'Enable Travel Mode?' : 'Exit Travel Mode?';
   document.getElementById('voyMsg').textContent = entering
-    ? 'Score calculated on pillars only: Al-ʿAhd, Quran, Anki, 12K steps, Ṣalāh, Adhkārs, Āyat al-Kursī, Witr.'
+    ? 'Al-ʿAhd · Quran · CSAA (1h) · Ṣalāh · Anki · Silicon Valley · Steps'
     : 'Back to normal mode — all habits and DEEN items restored.';
   document.getElementById('voyConfirm').textContent = entering ? 'Enable' : 'Disable';
   document.getElementById('voyOverlay').classList.add('show');
