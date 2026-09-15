@@ -672,17 +672,17 @@ nav {
 
   <div class="scores-wrap">
     <div class="score-block">
-      <div class="score-label">Alignment</div>
+      <div class="score-label">Deen</div>
       <div class="score-num" id="scoreAlign">0%</div>
     </div>
     <div class="score-divider"></div>
     <div class="score-block">
-      <div class="score-label">Deen</div>
+      <div class="score-label">Dounia</div>
       <div class="score-num" id="scoreDeen">0%</div>
     </div>
     <div class="score-divider"></div>
     <div class="score-block">
-      <div class="score-label">Dounia</div>
+      <div class="score-label">English</div>
       <div class="score-num" id="scoreDounia">0%</div>
     </div>
   </div>
@@ -705,6 +705,10 @@ nav {
   <div class="rbody" id="rbody">
     <div id="rlist"></div>
   </div>
+
+  <div class="section">English</div>
+  <div id="elist"></div>
+  <div id="english-day-banner" style="display:none;margin:8px 0 4px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);font-size:12px;color:rgba(59,130,246,0.9);font-weight:600;text-align:center">⭐ English Day</div>
 
   <div class="rt" id="sporttoggle" onclick="toggleSport()">
     <span>Bonus</span>
@@ -919,14 +923,9 @@ const HABITS = [
   { id:'hifz_farj',        name:'Al-ʿAhd',                desc:'Personal covenant',                                weight:5, punitive:true },
   { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
   { id:'scapula',          name:'Scapula',                 desc:'Neck & scapula exercises',                         weight:3 },
-  { id:'family_contact',   name:'Family',                  desc:'Call or message',                                  weight:2 },
   { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium · Ashwagandha', max:4, weight:4, xp:20 },
-  { id:'eng_grammar',      name:'English',                 desc:'Grammar · practice with teacher',                  weight:3 },
-  { id:'eng_anki',         name:'Anki',                   desc:'Daily flashcard deck',                             weight:3 },
-  { id:'eng_write',        name:'Silicon Valley',           desc:'1 ep max · binge = punitive',                      weight:3, binge:true },
   { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, slider:true, sliderMax:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
-  { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — podcasts & reading only',      weight:2 },
-  { id:'no_music',         name:'No music',                desc:'Silence & dhikr — peace of mind',                  weight:2 },
+  { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — no music either',             weight:3, punitive:true },
   { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:15000, sliderStep:500 },
 ];
 
@@ -950,8 +949,17 @@ const BONUS = [
   { id:'bjj',    name:'BJJ',           desc:'Class — Brazilian Jiu-Jitsu',       weight:3 },
   { id:'muscu',  name:'Muscu',         desc:'Strength training session',          weight:2 },
   { id:'najah',  name:'Najah class',   desc:'Session with the Sheikh — 4/week',  weight:3, max:4 },
-  { id:'preply', name:'Preply class',  desc:'1h with native speaker',             weight:3 },
 ];
+
+const ENGLISH = [
+  { id:'eng_podcast',  name:'Podcast 15min',  desc:'Listening — passive input',        xp:20 },
+  { id:'eng_anki',     name:'Anki',           desc:'Daily flashcard deck',             xp:30 },
+  { id:'eng_reading',  name:'Reading',        desc:'Book · article — 15 min min',     xp:40 },
+  { id:'eng_writing',  name:'Writing 10min',  desc:'Journal · email · paragraph',     xp:40 },
+  { id:'eng_revision', name:'Revision 25min', desc:'Grammar · structured study',      xp:50 },
+  { id:'eng_preply',   name:'Preply — Ahmed', desc:'1h session with native teacher',  xp:100 },
+];
+const ENGLISH_DAY = 100;
 const CHEAT = { id:'cheat', name:'Cheat meal', desc:'Off-plan meal — tracking only' };
 
 const RAWATIB = [
@@ -1001,7 +1009,7 @@ const CARDS = {
 
 const CHECK_SVG = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>`;
 
-let hs={}, ds={}, rs={}, ss={}, note='';
+let hs={}, ds={}, rs={}, ss={}, es={}, note='';
 let hPushBusy2=false, hPushQueued2=false;
 
 let currentDate = '';
@@ -1040,14 +1048,14 @@ function nextDay() {
 }
 
 async function loadDay() {
-  hs={}; ds={}; rs={}; note='';
+  hs={}; ds={}; rs={}; ss={}; es={}; note='';
   renderDateNav();
   applyDayOffUI();
-  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderEnglish(); renderBonus(); renderXP();
   document.getElementById('noteEl').value='';
   await loadHL();
   applyDayOffUI();
-  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderEnglish(); renderBonus(); renderXP();
 }
 
 let toastT;
@@ -1253,6 +1261,8 @@ function xpDeenMax() {
   const r=RAWATIB.reduce((s,x)=>s+x.xp,0);
   return d+r;
 }
+function xpEnglish(){ return ENGLISH.reduce((s,e)=>es[e.id]?s+e.xp:s, 0); }
+function xpEnglishMax(){ return ENGLISH.reduce((s,e)=>s+e.xp, 0); }
 function xpTotal(){ return xpDeen(); }
 
 function color(pct) {
@@ -1277,11 +1287,15 @@ function renderXP() {
   const dounia = scoreJour();
   const xp = voyageMode ? xpDeenVoyage() : xpDeen();
   const deenPct = Math.min(Math.round(xp/500*100), 100);
-  const align = Math.round(deenPct*0.6 + dounia*0.4);
+  const engXp = xpEnglish();
+  const engPct = Math.min(Math.round(engXp/xpEnglishMax()*100), 100);
 
-  elA.textContent = align+'%';   elA.style.color = color(align);
-  elD.textContent = deenPct+'%'; elD.style.color = color(deenPct);
-  elQ.textContent = dounia+'%';  elQ.style.color = color(dounia);
+  elA.textContent = deenPct+'%'; elA.style.color = color(deenPct);
+  elD.textContent = dounia+'%';  elD.style.color = color(dounia);
+  elQ.textContent = engPct+'%';  elQ.style.color = color(engPct);
+
+  const edBanner = document.getElementById('english-day-banner');
+  if(edBanner) edBanner.style.display = engXp >= ENGLISH_DAY ? 'block' : 'none';
 }
 
 function habitRow(h) {
@@ -1436,6 +1450,20 @@ function tH(id){
 }
 function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();pushHabits();}
 function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();pushHabits();}
+function tE(id){es[id]=!es[id];saveHL();renderEnglish();renderXP();pushHabits();}
+
+function renderEnglish(){
+  document.getElementById('elist').innerHTML=ENGLISH.map(e=>{
+    const done=!!es[e.id];
+    return `<div class="row ${done?'done':''}" onclick="tE('${e.id}')">
+      <div class="circle">${done?CHECK_SVG:''}</div>
+      <div class="ri">
+        <div class="rn">${e.name}</div>
+        <div class="rd">${e.desc} · ${e.xp} XP</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 let noteTimer;
 function saveNote(){
@@ -1488,11 +1516,11 @@ function toggleDayOff(){
     localStorage.setItem('dayoff_last', currentDate);
   }
   applyDayOffUI();
-  renderHabits(); renderDeen(); renderRawatib(); renderBonus(); renderXP();
+  renderHabits(); renderDeen(); renderRawatib(); renderEnglish(); renderBonus(); renderXP();
 }
 
 // ─── MODE VOYAGE ───
-const VOYAGE_HABITS = ['hifz_farj','quran_15min','csaa','eng_anki','eng_write','steps_12k'];
+const VOYAGE_HABITS = ['hifz_farj','quran_15min','csaa','steps_12k'];
 const VOYAGE_DEEN   = ['salah_waqt'];
 const VOYAGE_RAW    = [];
 
@@ -1529,7 +1557,7 @@ function askVoyage(){
   const entering = !voyageMode;
   document.getElementById('voyTitle').textContent = entering ? 'Enable Travel Mode?' : 'Exit Travel Mode?';
   document.getElementById('voyMsg').textContent = entering
-    ? 'Al-ʿAhd · Quran · CSAA (1h) · Ṣalāh · Anki · Silicon Valley · Steps'
+    ? 'Al-ʿAhd · Quran · CSAA (1h) · Ṣalāh · Steps'
     : 'Back to normal mode — all habits and DEEN items restored.';
   document.getElementById('voyConfirm').textContent = entering ? 'Enable' : 'Disable';
   document.getElementById('voyOverlay').classList.add('show');
@@ -1542,7 +1570,7 @@ function confirmVoyage(){
   localStorage.setItem('voyage_mode', voyageMode ? '1' : '0');
   closeVoy();
   applyVoyageUI();
-  renderHabits(); renderDeen(); renderXP();
+  renderHabits(); renderDeen(); renderEnglish(); renderXP();
   toast(voyageMode ? '✈️ Mode Voyage activé' : '🏠 Mode Normal activé');
 }
 
@@ -1562,8 +1590,6 @@ function tB(id){
   const b=BONUS.find(x=>x.id===id);
   if(b&&b.max&&b.max>1){ hs[id]=((hs[id]||0)>=b.max)?0:(hs[id]||0)+1; }
   else{ hs[id]=!hs[id]; }
-  // Preply session auto-checks English habit
-  if(id==='preply' && hs['preply']) hs['eng_grammar']=true;
   saveHL(); renderHabits(); renderBonus(); renderXP(); pushHabits();
 }
 function tCheat(){ss[CHEAT.id]=!ss[CHEAT.id];saveHL();renderBonus();pushHabits();}
@@ -1778,13 +1804,13 @@ function renderSportHeatmap(){
   }).join('');
 }
 
-function saveHL(){localStorage.setItem('hs_'+currentDate,JSON.stringify({hs,ds,rs,ss}));}
+function saveHL(){localStorage.setItem('hs_'+currentDate,JSON.stringify({hs,ds,rs,ss,es}));}
 
 async function loadHL(){
   const d=currentDate;
   // Affichage immédiat depuis localStorage
   const raw=localStorage.getItem('hs_'+d);
-  if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};ss=p.ss||{};}
+  if(raw){const p=JSON.parse(raw);hs=p.hs||{};ds=p.ds||{};rs=p.rs||{};ss=p.ss||{};es=p.es||{};}
   // Toujours fetch GitHub pour sync multi-appareils
   try{
     const r=await fetch(WORKER+'?date='+d+'&section=HABITS&t='+Date.now());
@@ -1794,9 +1820,9 @@ async function loadHL(){
         const m=text.match(/<!-- STATE:(.*?) -->/);
         if(m){
           const p=JSON.parse(m[1]);
-          hs=p.hs||{}; ds=p.ds||{}; rs=p.rs||{}; ss=p.ss||{};
+          hs=p.hs||{}; ds=p.ds||{}; rs=p.rs||{}; ss=p.ss||{}; es=p.es||{};
           saveHL();
-          renderHabits(); renderDeen(); renderRawatib(); renderXP();
+          renderHabits(); renderDeen(); renderRawatib(); renderEnglish(); renderXP();
         }
       }
     }
@@ -1834,7 +1860,11 @@ async function pushHabits(){
   content+=`\n## MUSLIM DAY\n\n- ${md?'✅':'❌'} MUSLIM DAY — ${xp} / 500 XP DEEN\n`;
   content+=md?`- ⭐ DEEN goal reached\n`:`- ${500-Math.min(xp,500)} XP remaining\n`;
   content+=`\nDEEN_DATA — Total XP: ${xp} / ${xpDeenMax()} | Muslim Day: ${md?'YES':'NO'}\n`;
-  content+=`<!-- STATE:${JSON.stringify({hs,ds,rs,ss})} -->`;
+  const exp=xpEnglish(), ed=exp>=ENGLISH_DAY;
+  content+=`\n## ENGLISH\n\n`;
+  ENGLISH.forEach(e=>{content+=`- ${es[e.id]?'✅':'❌'} ${e.name} | XP: +${es[e.id]?e.xp:0}\n`;});
+  content+=`\nENGLISH_DATA — Total XP: ${exp} / ${xpEnglishMax()} | English Day: ${ed?'YES':'NO'}\n`;
+  content+=`<!-- STATE:${JSON.stringify({hs,ds,rs,ss,es})} -->`;
   const body=JSON.stringify({content,date:d,section:'HABITS'});
   let ok=false;
   for(let i=0;i<3;i++){
@@ -1941,7 +1971,7 @@ async function init(){
   renderDateNav();
   applyVoyageUI();
   await loadHL();
-  renderHabits();renderDeen();renderRawatib();renderBonus();renderXP();
+  renderHabits();renderDeen();renderRawatib();renderEnglish();renderBonus();renderXP();
   loadResilience();
 }
 init();
