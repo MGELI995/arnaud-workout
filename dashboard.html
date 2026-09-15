@@ -119,83 +119,114 @@ nav {
 .scores-wrap {
   display: flex;
   align-items: center;
-  padding: 16px 0 20px;
-  gap: 0;
+  justify-content: space-around;
+  padding: 20px 0 24px;
 }
 .score-block {
-  flex: 1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
-.score-label {
-  font-size: 9px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
-  text-transform: uppercase;
+.score-ring {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: conic-gradient(var(--rc, var(--green)) calc(var(--pct, 0) * 1%), var(--bg3) 0);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: background 0.4s;
 }
-.score-num {
-  font-size: 22px;
-  font-weight: 600;
+.score-ring::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  background: var(--bg);
+  border-radius: 50%;
+}
+.score-ring-val {
+  position: relative; z-index: 1;
+  font-size: 15px; font-weight: 700;
   color: var(--text);
   transition: color 0.3s;
 }
-.score-divider {
-  width: 1px;
-  height: 32px;
-  background: var(--bg2);
-  flex-shrink: 0;
+.score-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 /* ── SECTION ── */
 .section {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 700;
   color: var(--muted);
-  letter-spacing: 0.03em;
-  padding: 20px 0 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.section::before {
+  content: '';
+  display: inline-block;
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: var(--dim);
+  flex-shrink: 0;
+}
+.section.s-deen::before  { background: #d97706; }
+.section.s-eng::before   { background: #3b82f6; }
+.section.s-bonus::before { background: #8b5cf6; }
 
 /* ── HABIT ROW ── */
 .row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 13px 0;
+  padding: 14px 14px;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.1s;
-  margin: 0 -8px;
-  padding-left: 8px;
-  padding-right: 8px;
+  border-radius: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-left: 3px solid var(--dim);
+  margin-bottom: 7px;
+  transition: border-color 0.2s, background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
-.row:active { background: var(--bg2); }
+.row:active { background: var(--bg3); transform: scale(0.99); }
+.row.done { border-left-color: var(--green); }
+.row.punitive-open { border-left-color: rgba(239,68,68,0.7); }
 
 .circle {
-  width: 20px; height: 20px;
+  width: 26px; height: 26px;
   border-radius: 50%;
-  border: 1.5px solid var(--dim);
+  border: 2px solid var(--bg3);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 .circle svg { display:none; }
 .row.done .circle {
   background: var(--green);
   border-color: var(--green);
+  transform: scale(1.05);
 }
 .row.done .circle svg { display:block; }
 
 .ri { flex:1; min-width:0; }
 .rn {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text);
   line-height: 1.3;
 }
 .rd {
   font-size: 11px;
   color: var(--muted);
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .row.done .rn {
   color: var(--muted);
@@ -208,50 +239,59 @@ nav {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 13px 8px;
+  padding: 14px 14px;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.1s;
-  margin: 0 -8px;
+  border-radius: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-left: 3px solid var(--dim);
+  margin-bottom: 7px;
+  transition: border-color 0.2s, background 0.15s, transform 0.1s;
 }
-.drow:active { background: var(--bg2); }
+.drow:active { background: var(--bg3); transform: scale(0.99); }
+.drow.partial { border-left-color: rgba(217,119,6,0.5); }
+.drow.full    { border-left-color: #d97706; }
 
 .dcircle {
-  width: 20px; height: 20px;
+  width: 26px; height: 26px;
   border-radius: 50%;
-  border: 1.5px solid var(--dim);
+  border: 2px solid var(--bg3);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700;
+  font-size: 10px; font-weight: 700;
   color: var(--muted);
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
-.drow.partial .dcircle { border-color: var(--green); color: var(--green); }
-.drow.full    .dcircle { background: var(--green); border-color: var(--green); color: #000; }
+.drow.partial .dcircle { border-color: #d97706; color: #d97706; }
+.drow.full    .dcircle { background: #d97706; border-color: #d97706; color: #000; }
 .drow.full    .rn { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--dim); }
 .circle-fail { border-color: #ef4444 !important; }
 .row.hifz-fail .rn { color: #ef4444; }
 
-.dots-wrap { display:flex; gap:3px; flex-shrink:0; }
-.d { width:5px; height:5px; border-radius:50%; background:var(--dim); transition:background 0.15s; }
-.d.on { background: var(--green); }
+.dots-wrap { display:flex; gap:4px; flex-shrink:0; }
+.d { width:6px; height:6px; border-radius:50%; background:var(--bg3); transition:background 0.15s; }
+.d.on { background: #d97706; }
 
 /* ── RAWATIB TOGGLE ── */
 .rt {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 13px 8px;
-  margin: 0 -8px;
+  padding: 10px 14px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
   font-size: 11px;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   user-select: none;
   transition: background 0.1s;
+  margin-bottom: 7px;
 }
-.rt:active { background: var(--bg2); }
+.rt:active { background: var(--bg3); }
 .rt-arrow { font-size: 9px; transition: transform 0.2s; }
 .rt.open .rt-arrow { transform: rotate(90deg); }
 .rbody { display:none; }
@@ -575,15 +615,32 @@ nav {
 .muscu-unit { font-size:11px; color:var(--muted); }
 
 /* ── SLIDER HABIT ── */
-.slider-row { padding:12px 8px; margin:0 -8px; }
-.slider-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.slider-name { font-size:14px; color:var(--text); }
-.slider-val { font-size:13px; font-weight:600; color:var(--green); min-width:50px; text-align:right; }
+.slider-row {
+  padding: 14px 14px;
+  margin-bottom: 7px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-left: 3px solid var(--green);
+  border-radius: 12px;
+}
+.slider-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.slider-name { font-size:14px; font-weight:500; color:var(--text); }
+.slider-val { font-size:13px; font-weight:600; color:var(--green); min-width:60px; text-align:right; }
 .slider-val.zero { color:var(--muted); }
-.habit-slider { width:100%; height:4px; -webkit-appearance:none; appearance:none; background:var(--bg3); border-radius:2px; outline:none; cursor:pointer; }
-.habit-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--green); cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.4); }
-.habit-slider::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--green); cursor:pointer; border:none; }
-.slider-desc { font-size:11px; color:var(--muted); margin-top:6px; }
+.habit-slider {
+  width:100%; height:5px; -webkit-appearance:none; appearance:none;
+  background:var(--bg3); border-radius:3px; outline:none; cursor:pointer;
+}
+.habit-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+  background:var(--green); cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.5);
+  border: 2px solid var(--bg);
+}
+.habit-slider::-moz-range-thumb {
+  width:22px; height:22px; border-radius:50%;
+  background:var(--green); cursor:pointer; border: 2px solid var(--bg);
+}
+.slider-desc { font-size:11px; color:var(--muted); margin-top:8px; }
 
 /* ── ASHWAGANDHA ── */
 .ashwa-stat { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--bg2); font-size:13px; }
@@ -672,22 +729,26 @@ nav {
 
   <div class="scores-wrap">
     <div class="score-block">
+      <div class="score-ring" id="ring-deen" style="--rc:#d97706">
+        <span class="score-ring-val" id="scoreAlign">0%</span>
+      </div>
       <div class="score-label">Deen</div>
-      <div class="score-num" id="scoreAlign">0%</div>
     </div>
-    <div class="score-divider"></div>
     <div class="score-block">
+      <div class="score-ring" id="ring-dounia" style="--rc:#22c55e">
+        <span class="score-ring-val" id="scoreDeen">0%</span>
+      </div>
       <div class="score-label">Dounia</div>
-      <div class="score-num" id="scoreDeen">0%</div>
     </div>
-    <div class="score-divider"></div>
     <div class="score-block">
+      <div class="score-ring" id="ring-eng" style="--rc:#3b82f6">
+        <span class="score-ring-val" id="scoreDounia">0%</span>
+      </div>
       <div class="score-label">English</div>
-      <div class="score-num" id="scoreDounia">0%</div>
     </div>
   </div>
 
-  <div class="section" id="sectionDaily">Daily</div>
+  <div class="section" id="sectionDaily">Daily habits</div>
   <div id="hlist"></div>
 
   <div id="var-section" style="display:none">
@@ -695,7 +756,7 @@ nav {
     <div id="vlist"></div>
   </div>
 
-  <div class="section">Deen</div>
+  <div class="section s-deen">Deen</div>
   <div id="dlist"></div>
 
   <div class="rt" id="rt" onclick="toggleR()">
@@ -706,7 +767,7 @@ nav {
     <div id="rlist"></div>
   </div>
 
-  <div class="section">English</div>
+  <div class="section s-eng">English</div>
   <div id="elist"></div>
   <div id="english-day-banner" style="display:none;margin:8px 0 4px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);font-size:12px;color:rgba(59,130,246,0.9);font-weight:600;text-align:center">⭐ English Day</div>
 
@@ -1294,6 +1355,15 @@ function renderXP() {
   elD.textContent = dounia+'%';  elD.style.color = color(dounia);
   elQ.textContent = engPct+'%';  elQ.style.color = color(engPct);
 
+  // Update rings
+  const setRing = (id, pct) => {
+    const el = document.getElementById(id);
+    if(el) el.style.setProperty('--pct', pct);
+  };
+  setRing('ring-deen', deenPct);
+  setRing('ring-dounia', dounia);
+  setRing('ring-eng', engPct);
+
   const edBanner = document.getElementById('english-day-banner');
   if(edBanner) edBanner.style.display = engXp >= ENGLISH_DAY ? 'block' : 'none';
 }
@@ -1339,7 +1409,8 @@ function habitRow(h) {
     </div>`;
   }
   const done=!!hs[h.id];
-  return `<div class="row ${done?'done':''}" onclick="tH('${h.id}')">
+  const punitiveOpen = h.punitive && !done;
+  return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')">
     <div class="circle">${done?CHECK_SVG:''}</div>
     <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
   </div>`;
@@ -1455,11 +1526,11 @@ function tE(id){es[id]=!es[id];saveHL();renderEnglish();renderXP();pushHabits();
 function renderEnglish(){
   document.getElementById('elist').innerHTML=ENGLISH.map(e=>{
     const done=!!es[e.id];
-    return `<div class="row ${done?'done':''}" onclick="tE('${e.id}')">
-      <div class="circle">${done?CHECK_SVG:''}</div>
+    return `<div class="row ${done?'done':''}" style="border-left-color:${done?'#3b82f6':'var(--dim)'}" onclick="tE('${e.id}')">
+      <div class="circle" style="${done?'background:#3b82f6;border-color:#3b82f6':''}">${done?CHECK_SVG:''}</div>
       <div class="ri">
         <div class="rn">${e.name}</div>
-        <div class="rd">${e.desc} · ${e.xp} XP</div>
+        <div class="rd">${e.desc} · <span style="color:#3b82f6;font-weight:600">+${e.xp} XP</span></div>
       </div>
     </div>`;
   }).join('');
@@ -1529,7 +1600,7 @@ let voyageMode = localStorage.getItem('voyage_mode') === '1';
 function applyVoyageUI(){
   document.getElementById('voyBanner').classList.toggle('active', voyageMode);
   document.getElementById('voyageBtn').classList.toggle('active', voyageMode);
-  document.getElementById('sectionDaily').textContent = voyageMode ? '✈️ Travel mode' : 'Daily';
+  document.getElementById('sectionDaily').textContent = voyageMode ? '✈️ Travel mode' : 'Daily habits';
 }
 
 function scoreJourVoyage(){
