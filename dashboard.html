@@ -642,14 +642,30 @@ nav {
 }
 .slider-desc { font-size:11px; color:var(--muted); margin-top:8px; }
 
-/* ── ASHWAGANDHA ── */
-.ashwa-stat { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--bg2); font-size:13px; }
-.ashwa-stat:last-of-type { border-bottom:none; }
-.ashwa-phase { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--bg2); }
-.ashwa-phase:last-child { border-bottom:none; }
-.ashwa-phase-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
-.ashwa-cell { width:18px; height:18px; border-radius:4px; border:1px solid rgba(255,255,255,0.06); }
-.ashwa-phase.active-phase > div:first-child { box-shadow:0 0 0 2px rgba(34,197,94,0.4); }
+/* ── RESILIENCE REDESIGN ── */
+.res-week-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+.res-week-label { font-size:10px; color:var(--muted); width:28px; flex-shrink:0; text-align:right; }
+.res-day-cell {
+  flex:1; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:600; cursor:default; transition:transform 0.1s;
+  position:relative; min-width:0;
+}
+.res-day-cell:hover { transform:scale(1.05); z-index:1; }
+.res-day-cell.rd-good { background:rgba(34,197,94,0.25); color:#4ade80; }
+.res-day-cell.rd-great { background:rgba(34,197,94,0.55); color:#fff; }
+.res-day-cell.rd-bad  { background:rgba(239,68,68,0.3); color:#f87171; }
+.res-day-cell.rd-empty{ background:var(--bg2); color:var(--dim); }
+.res-day-cell.rd-vac  { background:rgba(255,255,255,0.08); color:var(--muted); }
+.res-day-cell.rd-off  { background:rgba(251,191,36,0.15); color:#fbbf24; }
+.res-day-cell.rd-sick { background:rgba(96,165,250,0.2); color:#93c5fd; }
+.res-day-cell.rd-ahd  { box-shadow:inset 0 0 0 2px rgba(239,68,68,0.85); }
+.res-day-cell .rd-dot { position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:currentColor; opacity:0.6; }
+.res-week-days { display:flex; gap:6px; flex:1; }
+.res-day-names { display:flex; gap:6px; margin-left:34px; margin-bottom:4px; }
+.res-day-names span { flex:1; text-align:center; font-size:9px; color:var(--dim); }
+.res-legend { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--bg2); }
+.res-legend-item { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--muted); }
+.res-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
 
 /* ── TOAST ── */
 .toast {
@@ -801,135 +817,23 @@ nav {
   <div class="res-summary">
     <div class="res-stat">
       <div class="res-stat-num" id="resStreak">—</div>
-      <div class="res-stat-label">Current streak (≥50%)</div>
+      <div class="res-stat-label">Streak ≥50%</div>
     </div>
     <div class="res-stat">
       <div class="res-stat-num" id="resAvg">—</div>
-      <div class="res-stat-label">90-day average</div>
+      <div class="res-stat-label">90-day avg</div>
+    </div>
+    <div class="res-stat">
+      <div class="res-stat-num" id="resGoodDays">—</div>
+      <div class="res-stat-label">Good days (90d)</div>
     </div>
   </div>
 
   <div class="section">Resilience — last 12 weeks</div>
-  <div style="display:flex;gap:4px;align-items:flex-start;">
-    <div class="hm-day-col">
-      <div class="hm-day-lbl" style="height:14px;margin-bottom:2px"></div>
-      <div class="hm-day-lbl">M</div>
-      <div class="hm-day-lbl"></div>
-      <div class="hm-day-lbl">W</div>
-      <div class="hm-day-lbl"></div>
-      <div class="hm-day-lbl">F</div>
-      <div class="hm-day-lbl"></div>
-    </div>
-    <div class="heatmap-wrap" style="flex:1">
-      <div id="resMonths" style="display:flex;gap:4px;height:14px;margin-bottom:2px;"></div>
-      <div class="heatmap-grid" id="resGrid"><div class="res-loading">Loading…</div></div>
-    </div>
+  <div class="res-day-names">
+    <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
   </div>
-  <div class="heatmap-legend">
-    <span>Less</span>
-    <div class="hm-cell" style="background:var(--bg3)"></div>
-    <div class="hm-cell" style="background:rgba(239,68,68,0.55)"></div>
-    <div class="hm-cell" style="background:rgba(245,158,11,0.55)"></div>
-    <div class="hm-cell" style="background:rgba(34,197,94,0.55)"></div>
-    <div class="hm-cell" style="background:rgba(34,197,94,1)"></div>
-    <span>More</span>
-    <div class="hm-cell" style="box-shadow:inset 0 0 0 2px rgba(239,68,68,0.85);"></div>
-    <span>Al-ʿAhd ⚠</span>
-  </div>
-
-</div>
-</div>
-
-<!-- ═══════════ ASHWAGANDHA VIEW ═══════════ -->
-<div class="view" id="v-ashwa">
-<div class="content">
-
-  <div style="padding:18px 0 6px">
-    <div style="font-size:18px;font-weight:700;color:var(--text)">🌿 Ashwagandha</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:3px">KSM-66 · 600 mg · 30-day self-experiment</div>
-  </div>
-
-  <!-- Day counter -->
-  <div style="display:flex;gap:0;padding:16px 0 4px">
-    <div style="flex:1;text-align:center">
-      <div style="font-size:28px;font-weight:700;color:var(--text)" id="ashwaDayNum">—</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">DAY / 30</div>
-    </div>
-    <div style="width:1px;background:var(--bg2);flex-shrink:0"></div>
-    <div style="flex:1;text-align:center">
-      <div style="font-size:28px;font-weight:700" id="ashwaComplianceNum">—</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">COMPLIANCE</div>
-    </div>
-    <div style="width:1px;background:var(--bg2);flex-shrink:0"></div>
-    <div style="flex:1;text-align:center">
-      <div style="font-size:28px;font-weight:700;color:var(--text)" id="ashwaStreakNum">—</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.04em">STREAK</div>
-    </div>
-  </div>
-
-  <!-- Progress bar -->
-  <div style="height:4px;background:var(--bg2);border-radius:2px;margin:10px 0 20px">
-    <div id="ashwaBar" style="height:4px;background:var(--green);border-radius:2px;width:0%;transition:width .4s"></div>
-  </div>
-
-  <!-- Today's dose -->
-  <div class="section" style="padding-top:4px">Today</div>
-  <div id="ashwaTodayRow" onclick="toggleAshwa()" style="display:flex;align-items:center;gap:14px;padding:13px 8px;cursor:pointer;border-radius:8px;margin:0 -8px;transition:background .1s">
-    <div id="ashwaCircle" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s"></div>
-    <div>
-      <div style="font-size:14px;color:var(--text)" id="ashwaTodayLabel">Dose taken</div>
-      <div style="font-size:11px;color:var(--muted)">600 mg · morning with food</div>
-    </div>
-  </div>
-
-  <!-- 30-day heatmap -->
-  <div class="section">30-day log</div>
-  <div style="display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 20px" id="ashwaGrid"></div>
-
-  <!-- Timeline -->
-  <div class="section">Expected timeline</div>
-  <div style="padding:4px 0 8px">
-    <div class="ashwa-phase" id="aphase1">
-      <div class="ashwa-phase-dot" style="background:rgba(245,158,11,0.7)"></div>
-      <div>
-        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 1–2 · Adaptation</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">HPA axis adapts · cortisol begins declining · no visible effect yet</div>
-      </div>
-    </div>
-    <div class="ashwa-phase" id="aphase2">
-      <div class="ashwa-phase-dot" style="background:rgba(245,158,11,0.9)"></div>
-      <div>
-        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 3–4 · First effects</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Stress −30% · sleep quality +50% · subjective recovery improves</div>
-      </div>
-    </div>
-    <div class="ashwa-phase" id="aphase3">
-      <div class="ashwa-phase-dot" style="background:rgba(34,197,94,0.7)"></div>
-      <div>
-        <div style="font-size:12px;font-weight:500;color:var(--text)">Week 5–8 · Peak effects</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Muscle recovery markers peak · VO2max · testosterone plateaux</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Research data -->
-  <div class="section">Research data (KSM-66 · RCTs)</div>
-  <div style="padding:4px 0 8px">
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Cortisol reduction</span><span style="font-weight:600;color:#f87171">−27%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Sleep quality (PSQI score)</span><span style="font-weight:600;color:var(--green)">+72%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Anxiety (GAD-7)</span><span style="font-weight:600;color:var(--green)">−44%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Muscle recovery speed</span><span style="font-weight:600;color:var(--green)">+11%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">VO₂max (athletes)</span><span style="font-weight:600;color:var(--green)">+12%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">Testosterone (men)</span><span style="font-weight:600;color:var(--green)">+17%</span></div>
-    <div class="ashwa-stat"><span style="color:var(--muted);font-size:12px">HRV (indirect via cortisol)</span><span style="font-weight:600;color:var(--green)">+~8%</span></div>
-    <div style="font-size:10px;color:var(--dim);margin-top:10px;line-height:1.6">Sources: Chandrasekhar (2012), Langade (2019), Wankhede (2015), Choudhary (2015) · 600 mg/day KSM-66 · 60–90 days</div>
-  </div>
-
-  <!-- Notes -->
-  <div class="section">Daily note</div>
-  <div class="note-wrap" style="margin-bottom:20px">
-    <textarea class="note" id="ashwaNoteEl" placeholder="Recovery feeling, sleep, stress level…" oninput="saveAshwaNote()"></textarea>
-  </div>
+  <div id="resGrid"><div class="res-loading">Loading…</div></div>
 
 </div>
 </div>
@@ -939,10 +843,6 @@ nav {
   <button class="tab active" id="tab-habits" onclick="showView('habits')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     Habits
-  </button>
-  <button class="tab" id="tab-ashwa" onclick="showView('ashwa')">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
-    Ashwa
   </button>
 </nav>
 
@@ -1178,76 +1078,113 @@ async function loadResilience(){
 function renderResilience(){
   if(!resData) return;
   const today = new Date();
-  const dates = Array.from({length: RES_DAYS}, (_,i)=>{
-    const d = new Date(today); d.setDate(d.getDate()-(RES_DAYS-1-i)); return d;
-  });
+  const todayKey = fmtDate(today);
 
-  // Padding pour aligner le 1er jour sur sa colonne (semaine commence lundi)
-  const firstDow = (dates[0].getDay()+6)%7; // 0=lundi
-  const cells = [];
-  for(let i=0;i<firstDow;i++) cells.push(null);
-  dates.forEach(d=>cells.push(d));
+  // Build 12 weeks of rows (Mon→Sun), most recent week last
+  const weeks = [];
+  // Find last Sunday (end of current week)
+  const weekEnd = new Date(today);
+  const dow = (today.getDay()+6)%7; // 0=Mon
+  weekEnd.setDate(weekEnd.getDate() + (6 - dow));
 
-  // Month labels
-  const totalCols = Math.ceil(cells.length / 7);
-  const colW = 20; // 16px cell + 4px gap
-  let prevMonth = -1;
-  const monthHtml = [];
-  for(let col=0; col<totalCols; col++){
-    const d = cells[col*7];
-    if(d && d.getMonth()!==prevMonth){
-      prevMonth = d.getMonth();
-      monthHtml.push(`<div style="width:${colW}px;font-size:9px;color:var(--muted);overflow:hidden;white-space:nowrap;flex-shrink:0">${d.toLocaleDateString('en',{month:'short'})}</div>`);
-    } else {
-      monthHtml.push(`<div style="width:${colW}px;flex-shrink:0"></div>`);
+  for(let w=11; w>=0; w--){
+    const row = [];
+    for(let d=0; d<7; d++){
+      const day = new Date(weekEnd);
+      day.setDate(weekEnd.getDate() - w*7 - (6-d));
+      row.push(day);
     }
+    weeks.push(row);
   }
-  document.getElementById('resMonths').innerHTML = monthHtml.join('');
 
-  document.getElementById('resGrid').innerHTML = cells.map(d=>{
-    if(!d) return '<div class="hm-cell empty"></div>';
-    const key = fmtDate(d);
-    const entry = key >= RES_START_DATE ? resData[key] : null;
-    let bg = 'var(--bg3)', label = `${key} — no data`, extra = '';
-    const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
-    const isDayOffKey = localStorage.getItem('dayoff_'+key) === '1';
-    if(isVacance){
-      bg = 'rgba(255,255,255,0.55)'; label = `${key} — ✈️ vacation`;
-    } else if(isDayOffKey){
-      bg = 'rgba(251,191,36,0.5)'; label = `${key} — ☀️ day off`;
-    } else if(entry && entry.sick){
-      bg = 'rgba(96,165,250,0.5)'; label = `${key} — 🤒 sick`;
-    } else if(entry && entry.s!=null){
-      const score = entry.s;
-      if(score>=80) bg = `rgba(34,197,94,${0.55+score/100*0.45})`;
-      else if(score>=50) bg = `rgba(245,158,11,${0.55+score/100*0.45})`;
-      else if(score>0) bg = `rgba(239,68,68,${0.55+score/100*0.45})`;
-      label = `${key} — ${score}%`;
-    }
-    // Al-ʿAhd violation indicator
-    if(!isVacance && !isDayOffKey && !(entry&&entry.sick)){
-      try{
-        const hp=JSON.parse(localStorage.getItem('hs_'+key)||'{}');
-        if(hp.hs && hp.hs.hifz_farj===false || (hp.hs && hp.hs.hifz_farj===0)){
-          extra='box-shadow:inset 0 0 0 2px rgba(239,68,68,0.9);';
-          label+=' · ⚠️ al-ʿAhd';
-        }
-      }catch(e){}
-    }
-    return `<div class="hm-cell" style="background:${bg};${extra}" title="${label}"></div>`;
+  // Month label for first day of each week (show if month changes)
+  let prevMonth = -1;
+  const gridHtml = weeks.map(week=>{
+    const firstDay = week[0];
+    const mon = firstDay.getMonth();
+    const weekLabel = mon !== prevMonth
+      ? firstDay.toLocaleDateString('en',{month:'short'})
+      : '';
+    prevMonth = mon;
+
+    const dayCells = week.map(d=>{
+      const key = fmtDate(d);
+      const isFuture = key > todayKey;
+      const entry = key >= RES_START_DATE ? resData[key] : null;
+      const isVacance = VACANCES.some(([from,to])=>key>=from&&key<=to);
+      const isDayOff = localStorage.getItem('dayoff_'+key) === '1';
+
+      let cls = 'rd-empty', txt = '', title = key;
+      let ahdViol = false;
+
+      if(isFuture){
+        cls = 'rd-empty'; txt = '';
+      } else if(isVacance){
+        cls = 'rd-vac'; txt = '✈';  title += ' · vacation';
+      } else if(isDayOff){
+        cls = 'rd-off'; txt = '☀';  title += ' · day off';
+      } else if(entry && entry.sick){
+        cls = 'rd-sick'; txt = ''; title += ' · sick';
+      } else if(entry && entry.s!=null){
+        const s = entry.s;
+        if(s>=80)      { cls='rd-great'; txt=s+'%'; }
+        else if(s>=50) { cls='rd-good';  txt=s+'%'; }
+        else           { cls='rd-bad';   txt=s+'%'; }
+        title += ' · '+s+'%';
+        // Al-ʿAhd check
+        try{
+          const hp=JSON.parse(localStorage.getItem('hs_'+key)||'{}');
+          if(hp.hs && hp.hs.hifz_farj===false || (hp.hs && hp.hs.hifz_farj===0)){
+            ahdViol=true; title+=' · ⚠️ al-ʿAhd';
+          }
+        }catch(e){}
+      }
+
+      const isToday = key===todayKey;
+      const todayBorder = isToday ? 'outline:2px solid rgba(255,255,255,0.3);outline-offset:-2px;' : '';
+      return `<div class="res-day-cell ${cls}${ahdViol?' rd-ahd':''}" style="${todayBorder}" title="${title}">${txt}</div>`;
+    }).join('');
+
+    return `<div class="res-week-row">
+      <div class="res-week-label">${weekLabel}</div>
+      <div class="res-week-days">${dayCells}</div>
+    </div>`;
   }).join('');
 
-  const scores = Object.values(resData).filter(e=>e && !e.sick && e.s!=null).map(e=>e.s);
-  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
-  document.getElementById('resAvg').textContent = scores.length ? avg+'%' : '—';
+  // Legend
+  const legend = `<div class="res-legend">
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.55)"></div>Good ≥50%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.9)"></div>Great ≥80%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(239,68,68,0.35)"></div>Bad &lt;50%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="box-shadow:inset 0 0 0 2px rgba(239,68,68,0.85);background:transparent"></div>Al-ʿAhd ⚠</div>
+  </div>`;
+
+  document.getElementById('resGrid').innerHTML = gridHtml + legend;
+
+  // Stats
+  const todayD = new Date(today);
+  const scores90 = [];
+  let goodDays = 0;
+  for(let i=0;i<90;i++){
+    const d = new Date(todayD); d.setDate(d.getDate()-i);
+    const k = fmtDate(d);
+    const e = resData[k];
+    if(VACANCES.some(([from,to])=>k>=from&&k<=to)) continue;
+    if(localStorage.getItem('dayoff_'+k)==='1') continue;
+    if(e && e.sick) continue;
+    if(e && e.s!=null){ scores90.push(e.s); if(e.s>=50) goodDays++; }
+  }
+  const avg = scores90.length ? Math.round(scores90.reduce((a,b)=>a+b,0)/scores90.length) : 0;
+  document.getElementById('resAvg').textContent = scores90.length ? avg+'%' : '—';
+  document.getElementById('resGoodDays').textContent = goodDays || '—';
 
   let streak = 0;
   for(let i=0;i<RES_DAYS;i++){
-    const d = new Date(today); d.setDate(d.getDate()-i);
+    const d = new Date(todayD); d.setDate(d.getDate()-i);
     const e = resData[fmtDate(d)];
     const kk = fmtDate(d);
     if(VACANCES.some(([from,to])=>kk>=from&&kk<=to)) continue;
-    if(localStorage.getItem('dayoff_'+kk) === '1') continue;
+    if(localStorage.getItem('dayoff_'+kk)==='1') continue;
     if(e && e.sick) continue;
     if(e && e.s!=null && e.s>=50) streak++; else break;
   }
@@ -1953,88 +1890,6 @@ function showView(v){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
   document.getElementById('tab-'+v).classList.add('active');
-  if(v==='ashwa') renderAshwa();
-}
-
-// ─── ASHWAGANDHA ───
-const ASHWA_START = '2026-08-12';
-const ASHWA_DAYS  = 30;
-
-function getAshwaData(){ try{return JSON.parse(localStorage.getItem('ashwa_data')||'{}');}catch(e){return {};} }
-function saveAshwaNote(){ localStorage.setItem('ashwa_note_'+currentDate, document.getElementById('ashwaNoteEl').value); }
-
-function toggleAshwa(){
-  const data = getAshwaData();
-  data[currentDate] = !data[currentDate];
-  localStorage.setItem('ashwa_data', JSON.stringify(data));
-  renderAshwa();
-}
-
-function renderAshwa(){
-  const data  = getAshwaData();
-  const today = currentDate;
-  const taken = data[today];
-
-  // Circle
-  const circle = document.getElementById('ashwaCircle');
-  circle.style.background = taken ? 'var(--green)' : '';
-  circle.style.borderColor = taken ? 'var(--green)' : 'var(--dim)';
-  circle.innerHTML = taken ? CHECK_SVG : '';
-  document.getElementById('ashwaTodayLabel').style.textDecoration = taken ? 'line-through' : 'none';
-  document.getElementById('ashwaTodayLabel').style.color = taken ? 'var(--muted)' : 'var(--text)';
-
-  // Day number
-  const start  = new Date(ASHWA_START+'T12:00:00');
-  const todayD = new Date(today+'T12:00:00');
-  const diffMs = todayD - start;
-  const dayNum = diffMs < 0 ? 0 : Math.min(Math.floor(diffMs/(1000*60*60*24))+1, ASHWA_DAYS);
-  document.getElementById('ashwaDayNum').textContent = dayNum > 0 ? dayNum : '—';
-
-  // Compliance
-  let taken_count = 0, elapsed = 0;
-  for(let i=0; i<ASHWA_DAYS; i++){
-    const d = new Date(start); d.setDate(start.getDate()+i);
-    const key = d.toISOString().split('T')[0];
-    if(key > today) break;
-    elapsed++;
-    if(data[key]) taken_count++;
-  }
-  const compliance = elapsed > 0 ? Math.round(taken_count/elapsed*100) : 0;
-  const compEl = document.getElementById('ashwaComplianceNum');
-  compEl.textContent = elapsed > 0 ? compliance+'%' : '—';
-  compEl.style.color = compliance>=80?'var(--green)':compliance>=60?'#f59e0b':'#ef4444';
-
-  // Streak
-  let streak = 0;
-  for(let i=dayNum-1; i>=0; i--){
-    const d = new Date(start); d.setDate(start.getDate()+i);
-    const key = d.toISOString().split('T')[0];
-    if(data[key]) streak++; else break;
-  }
-  document.getElementById('ashwaStreakNum').textContent = streak;
-
-  // Progress bar
-  document.getElementById('ashwaBar').style.width = (dayNum/ASHWA_DAYS*100)+'%';
-
-  // 30-day grid
-  const grid = document.getElementById('ashwaGrid');
-  grid.innerHTML = Array.from({length: ASHWA_DAYS}, (_,i)=>{
-    const d = new Date(start); d.setDate(start.getDate()+i);
-    const key = d.toISOString().split('T')[0];
-    const isFuture = key > today;
-    const bg = isFuture ? 'var(--bg2)' : data[key] ? 'var(--green)' : 'rgba(239,68,68,0.4)';
-    const border = key===today ? '2px solid var(--green)' : '1px solid rgba(255,255,255,0.06)';
-    return `<div class="ashwa-cell" style="background:${bg};border:${border}" title="Day ${i+1} — ${key}"></div>`;
-  }).join('');
-
-  // Active phase highlight
-  ['aphase1','aphase2','aphase3'].forEach(id=>document.getElementById(id).classList.remove('active-phase'));
-  if(dayNum>=1  && dayNum<=14) document.getElementById('aphase1').classList.add('active-phase');
-  if(dayNum>=15 && dayNum<=28) document.getElementById('aphase2').classList.add('active-phase');
-  if(dayNum>=29)               document.getElementById('aphase3').classList.add('active-phase');
-
-  // Note
-  document.getElementById('ashwaNoteEl').value = localStorage.getItem('ashwa_note_'+today)||'';
 }
 
 async function init(){
