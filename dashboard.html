@@ -920,7 +920,7 @@ const ENGLISH = [
   { id:'eng_revision', name:'Revision 25min', desc:'Grammar · structured study',      xp:50 },
   { id:'eng_preply',   name:'Preply — Ahmed', desc:'1h session with native teacher',  xp:100 },
 ];
-const ENGLISH_DAY = 100;
+const ENGLISH_DAY = 80;
 const CHEAT = { id:'cheat', name:'Cheat meal', desc:'Off-plan meal — tracking only' };
 
 const RAWATIB = [
@@ -1286,7 +1286,7 @@ function renderXP() {
   const xp = voyageMode ? xpDeenVoyage() : xpDeen();
   const deenPct = Math.min(Math.round(xp/500*100), 100);
   const engXp = xpEnglish();
-  const engPct = Math.min(Math.round(engXp/xpEnglishMax()*100), 100);
+  const engPct = Math.min(Math.round(engXp/ENGLISH_DAY*100), 100);
 
   elA.textContent = deenPct+'%'; elA.style.color = color(deenPct);
   elD.textContent = dounia+'%';  elD.style.color = color(dounia);
