@@ -642,6 +642,25 @@ nav {
 }
 .slider-desc { font-size:11px; color:var(--muted); margin-top:8px; }
 
+/* ── GLOBAL SCORE ── */
+.global-score-wrap {
+  display:flex; align-items:center; gap:12px;
+  margin: 2px 0 18px; padding: 12px 16px;
+  background:var(--bg2); border-radius:14px;
+  border:1px solid var(--bg3);
+}
+.global-score-bar-bg {
+  flex:1; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden;
+}
+.global-score-bar {
+  height:100%; border-radius:4px; width:0%;
+  background: linear-gradient(90deg, #d97706 0%, #22c55e 60%, #3b82f6 100%);
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+.global-score-label {
+  display:flex; flex-direction:column; align-items:flex-end; gap:1px; flex-shrink:0;
+}
+
 /* ── RESILIENCE REDESIGN ── */
 .res-week-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
 .res-week-label { font-size:10px; color:var(--muted); width:28px; flex-shrink:0; text-align:right; }
@@ -761,6 +780,16 @@ nav {
         <span class="score-ring-val" id="scoreDounia">0%</span>
       </div>
       <div class="score-label">English</div>
+    </div>
+  </div>
+
+  <div class="global-score-wrap">
+    <div class="global-score-bar-bg">
+      <div class="global-score-bar" id="globalBar"></div>
+    </div>
+    <div class="global-score-label">
+      <span style="color:var(--muted);font-size:11px;letter-spacing:.06em">GLOBAL</span>
+      <span id="globalScore" style="font-size:18px;font-weight:700;color:var(--text)">0%</span>
     </div>
   </div>
 
@@ -1300,6 +1329,13 @@ function renderXP() {
   setRing('ring-deen', deenPct);
   setRing('ring-dounia', dounia);
   setRing('ring-eng', engPct);
+
+  // Global weighted score: Deen 40% · Dounia 40% · English 20%
+  const global = Math.round(deenPct * 0.4 + dounia * 0.4 + engPct * 0.2);
+  const gEl = document.getElementById('globalScore');
+  const gBar = document.getElementById('globalBar');
+  if(gEl){ gEl.textContent = global+'%'; gEl.style.color = color(global); }
+  if(gBar) gBar.style.width = global+'%';
 
   const edBanner = document.getElementById('english-day-banner');
   if(edBanner) edBanner.style.display = engXp >= ENGLISH_DAY ? 'block' : 'none';
