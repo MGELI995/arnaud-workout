@@ -912,7 +912,7 @@ const HABITS = [
   { id:'wake_6h',           name:'Wake 6am',               desc:'Don\'t go back to sleep after Fajr',               weight:2 },
   { id:'hifz_farj',        name:'Al-ʿAhd',                desc:'Personal covenant',                                weight:5, punitive:true },
   { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
-  { id:'scapula',          name:'Scapula',                 desc:'Neck & scapula exercises',                         weight:3 },
+  { id:'scapula',          name:'Scapula alata',            desc:'3 exos · 3×12 circuit · 10 min',                   weight:3, info:true },
   { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium · Ashwagandha', max:4, weight:4, xp:20 },
   { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, slider:true, sliderMax:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
   { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — no music either',             weight:2 },
@@ -1384,9 +1384,11 @@ function habitRow(h) {
   }
   const done=!!hs[h.id];
   const punitiveOpen = h.punitive && !done;
+  const infoBtn = h.info ? `<button class="info-btn" onclick="openScapula(event)">${INFO_SVG}</button>` : '';
   return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')">
     <div class="circle">${done?CHECK_SVG:''}</div>
     <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+    ${infoBtn}
   </div>`;
 }
 
@@ -1445,6 +1447,121 @@ function renderDeen() {
       ${infoBtn}
     </div>`;
   }).join('');
+}
+
+function openScapula(e){
+  e.stopPropagation();
+  document.getElementById('ovTitle').textContent = 'Scapula alata — Programme';
+  document.getElementById('ovBody').innerHTML = `
+  <div style="padding:16px 20px;font-size:13px;line-height:1.6">
+
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--bg2)">
+      <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px">① Push-up plus <span style="font-size:11px;font-weight:400;color:var(--muted)">3 × 12</span></div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:10px">Pompe normale → en haut, tu pousses encore et arrondis le haut du dos. Les omoplates s'écartent. Descente 3 secondes.</div>
+      <svg viewBox="0 0 280 90" width="100%" style="display:block;max-width:280px;margin:0 auto">
+        <!-- position basse -->
+        <circle cx="30" cy="30" r="8" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="30" y1="38" x2="30" y2="60" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="30" y1="45" x2="10" y2="60" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="10" y1="60" x2="10" y2="70" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="30" y1="45" x2="50" y2="55" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="50" y1="55" x2="55" y2="65" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="30" y1="60" x2="20" y2="80" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="30" y1="60" x2="40" y2="80" stroke="var(--muted)" stroke-width="1.5"/>
+        <text x="30" y="88" text-anchor="middle" font-size="9" fill="var(--dim)">bas</text>
+        <!-- flèche -->
+        <text x="100" y="50" font-size="18" fill="var(--muted)" text-anchor="middle">→</text>
+        <!-- position haute normale -->
+        <circle cx="160" cy="20" r="8" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="160" y1="28" x2="160" y2="50" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="160" y1="35" x2="135" y2="45" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="135" y1="45" x2="130" y2="65" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="160" y1="35" x2="185" y2="45" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="185" y1="45" x2="190" y2="65" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="160" y1="50" x2="145" y2="75" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="160" y1="50" x2="175" y2="75" stroke="var(--muted)" stroke-width="1.5"/>
+        <text x="160" y="88" text-anchor="middle" font-size="9" fill="var(--dim)">haut</text>
+        <!-- flèche -->
+        <text x="220" y="50" font-size="18" fill="#22c55e" text-anchor="middle">→</text>
+        <!-- push extra -->
+        <circle cx="255" cy="15" r="8" fill="none" stroke="#22c55e" stroke-width="1.5"/>
+        <path d="M248 40 Q255 30 262 40" stroke="#22c55e" stroke-width="1.5" fill="none"/>
+        <line x1="255" y1="40" x2="255" y2="55" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="255" y1="42" x2="235" y2="48" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="235" y1="48" x2="230" y2="65" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="255" y1="42" x2="275" y2="48" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="275" y1="48" x2="278" y2="65" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="255" y1="55" x2="242" y2="75" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="255" y1="55" x2="268" y2="75" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="255" y="88" text-anchor="middle" font-size="9" fill="#22c55e">+push ✓</text>
+      </svg>
+    </div>
+
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--bg2)">
+      <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px">② W raise <span style="font-size:11px;font-weight:400;color:var(--muted)">3 × 12</span></div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:10px">Ventre au sol. Bras en W (coudes à 90°). Tu soulèves en pinçant les omoplates vers le BAS — pas vers les oreilles. 1kg ou à vide.</div>
+      <svg viewBox="0 0 280 80" width="100%" style="display:block;max-width:280px;margin:0 auto">
+        <!-- corps allongé -->
+        <rect x="60" y="45" width="160" height="8" rx="4" fill="var(--bg2)" stroke="var(--bg3)" stroke-width="1"/>
+        <!-- tête -->
+        <circle cx="230" cy="35" r="10" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        <!-- bras repos -->
+        <line x1="120" y1="44" x2="100" y2="35" stroke="var(--dim)" stroke-width="1.5"/>
+        <line x1="100" y1="35" x2="85" y2="45" stroke="var(--dim)" stroke-width="1.5"/>
+        <line x1="160" y1="44" x2="180" y2="35" stroke="var(--dim)" stroke-width="1.5"/>
+        <line x1="180" y1="35" x2="195" y2="45" stroke="var(--dim)" stroke-width="1.5"/>
+        <text x="140" y="75" text-anchor="middle" font-size="9" fill="var(--dim)">repos</text>
+        <!-- flèche vers le haut -->
+        <text x="48" y="30" font-size="10" fill="#22c55e">▲</text>
+        <!-- bras levés en W -->
+        <line x1="120" y1="44" x2="95" y2="20" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="95" y1="20" x2="75" y2="32" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="160" y1="44" x2="185" y2="20" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="185" y1="20" x2="205" y2="32" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="30" y="38" font-size="9" fill="#22c55e" text-anchor="middle">W</text>
+        <text x="250" y="38" font-size="9" fill="#22c55e" text-anchor="middle">W</text>
+        <text x="140" y="12" text-anchor="middle" font-size="9" fill="#22c55e">omoplates ↓ (pas vers les oreilles)</text>
+      </svg>
+    </div>
+
+    <div>
+      <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px">③ Band pull-apart <span style="font-size:11px;font-weight:400;color:var(--muted)">3 × 15</span></div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:10px">Élastique horizontal à hauteur épaules. Tu écartes lentement jusqu'à toucher la poitrine. 2s aller, 2s retour. Pince les omoplates 1s en fin.</div>
+      <svg viewBox="0 0 280 100" width="100%" style="display:block;max-width:280px;margin:0 auto">
+        <!-- debout position départ -->
+        <circle cx="70" cy="20" r="8" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="70" y1="28" x2="70" y2="60" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="70" y1="60" x2="55" y2="85" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="70" y1="60" x2="85" y2="85" stroke="var(--muted)" stroke-width="1.5"/>
+        <!-- bras tendus avec élastique -->
+        <line x1="70" y1="40" x2="45" y2="40" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="70" y1="40" x2="95" y2="40" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="45" y1="38" x2="95" y2="38" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2"/>
+        <text x="70" y="97" text-anchor="middle" font-size="9" fill="var(--dim)">départ</text>
+        <!-- flèche -->
+        <text x="140" y="48" font-size="18" fill="#22c55e" text-anchor="middle">→</text>
+        <!-- position écartée -->
+        <circle cx="210" cy="20" r="8" fill="none" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="210" y1="28" x2="210" y2="60" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="210" y1="60" x2="195" y2="85" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="210" y1="60" x2="225" y2="85" stroke="#22c55e" stroke-width="1.5"/>
+        <!-- bras écartés -->
+        <line x1="210" y1="40" x2="170" y2="40" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="210" y1="40" x2="250" y2="40" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="170" y1="38" x2="250" y2="38" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2"/>
+        <!-- omoplates qui se rejoignent -->
+        <path d="M200 30 Q210 35 220 30" stroke="#22c55e" stroke-width="1.5" fill="none"/>
+        <text x="210" y="97" text-anchor="middle" font-size="9" fill="#22c55e">écarté ✓</text>
+      </svg>
+    </div>
+
+    <div style="margin-top:16px;padding:10px 12px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">Circuit</strong> — enchaîne les 3 sans pause, puis <strong style="color:var(--text)">60s de repos</strong>, répète 3 fois.<br>
+      ⚠️ Fourmis au bout des doigts = arrête l'exo et note-le pour le kiné.
+    </div>
+  </div>`;
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
 }
 
 function openCard(e, id) {
