@@ -1,4 +1,4 @@
-const CACHE = 'arnaud-dashboard-v4';
+const CACHE = 'arnaud-dashboard-v5';
 const ASSETS = ['./dashboard.html', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -914,7 +914,8 @@ const HABITS = [
   { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
   { id:'scapula',          name:'Scapula alata',            desc:'3 exos · 3×12 circuit · 10 min',                   weight:3, info:true },
   { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium · Ashwagandha', max:4, weight:4, xp:20 },
-  { id:'csaa',             name:'CSAA',                    desc:'2×60 min',                                         weight:4, slider:true, sliderMax:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
+  { id:'csaa',             name:'CSAA',                    desc:'2h = 100% · jusqu\'à 5h bonus',                    weight:4, slider:true, sliderMax:300, sliderGoal:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
+  { id:'contact',          name:'Contact',                 desc:'Message someone you appreciate',                   weight:2 },
   { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — no music either',             weight:2 },
   { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:15000, sliderStep:500 },
 ];
@@ -1264,7 +1265,13 @@ function scoreJour() {
     const w=h.weight||1;
     const val=typeof hs[h.id]==='number'?hs[h.id]:(hs[h.id]?1:0);
     total+=w;
-    if(h.slider){ done+=w*(val/h.sliderMax); }
+    if(h.slider){
+      if(h.sliderGoal){
+        const base=Math.min(val/h.sliderGoal,1);
+        const extra=h.sliderMax>h.sliderGoal?Math.max(0,(val-h.sliderGoal)/(h.sliderMax-h.sliderGoal))*0.5:0;
+        done+=w*(base+extra);
+      } else { done+=w*(val/h.sliderMax); }
+    }
     else if(h.binge){ if(val===1) done+=w; else if(val===2) done-=w; }
     else if(h.max&&h.max>1){ done+=w*(val/h.max); }
     else if(val>0) done+=w;
@@ -1345,9 +1352,9 @@ function renderXP() {
 function habitRow(h) {
   if(h.slider){
     const v = hs[h.id]||0;
-    const pct = Math.round(v/h.sliderMax*100);
     const isSteps = h.sliderStep >= 100;
-    const label = v===0 ? '—' : isSteps ? (v>=1000?(v/1000).toFixed(1)+'k':v)+' steps · '+pct+'%' : v+'min · '+pct+'%';
+    const pctDisplay = h.sliderGoal ? Math.round(Math.min(v/h.sliderGoal,1)*100+(v>h.sliderGoal?Math.max(0,(v-h.sliderGoal)/(h.sliderMax-h.sliderGoal))*50:0)) : Math.round(v/h.sliderMax*100);
+    const label = v===0 ? '—' : isSteps ? (v>=1000?(v/1000).toFixed(1)+'k':v)+' steps · '+pctDisplay+'%' : v+'min · '+pctDisplay+'%';
     return `<div class="slider-row">
       <div class="slider-row-top">
         <span class="slider-name">${h.name}</span>
