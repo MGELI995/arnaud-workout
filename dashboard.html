@@ -910,14 +910,15 @@ function saveMuscuEntry(kg_sdt, kg_dips){
 
 const HABITS = [
   { id:'wake_6h',           name:'Wake 6am',               desc:'Don\'t go back to sleep after Fajr',               weight:2 },
-  { id:'hifz_farj',        name:'Al-ʿAhd',                desc:'Personal covenant',                                weight:5, punitive:true },
+  { id:'hifz_farj',        name:'Al-ʿAhd',                desc:'Personal covenant',                                weight:5, punitive:true, confirmCheck:true },
   { id:'quran_15min',      name:'Quran',                   desc:'Reading · tajwīd rules',                           weight:3 },
   { id:'scapula',          name:'Scapula alata',            desc:'3 exos · 3×12 circuit · 10 min',                   weight:3, info:true },
   { id:'supplements',      name:'Supplements',             desc:'Creatine · D3 · Magnesium · Ashwagandha', max:4, weight:4, xp:20 },
   { id:'csaa',             name:'CSAA',                    desc:'2h = 100% · jusqu\'à 5h bonus',                    weight:4, slider:true, sliderMax:300, sliderGoal:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
   { id:'contact',          name:'Contact',                 desc:'Message someone you appreciate',                   weight:2 },
-  { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video — no music either',             weight:2 },
-  { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:15000, sliderStep:500 },
+  { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video',                               weight:2 },
+  { id:'no_music',         name:'No Music',               desc:'No passive music listening',                        weight:2 },
+  { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:18000, sliderGoal:12000, sliderStep:500 },
 ];
 
 const DEEN = [
@@ -1611,11 +1612,36 @@ function setSlider(id, val){
 
 function tH(id){
   const h=HABITS.find(x=>x.id===id);
-  if(h&&h.slider) return; // slider items use setSlider
+  if(h&&h.slider) return;
+  if(h&&h.confirmCheck&&!hs[id]){
+    showAhdConfirm();
+    return;
+  }
   if(h&&h.binge){ hs[id]=((hs[id]||0)>=2)?0:(hs[id]||0)+1; }
   else if(h&&h.max&&h.max>1){ hs[id]=((hs[id]||0)>=h.max)?0:(hs[id]||0)+1; }
   else{ hs[id]=!hs[id]; }
   saveHL();renderHabits();renderXP();pushHabits();
+}
+
+function showAhdConfirm(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML=`<div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">
+    <div style="font-size:22px;margin-bottom:12px;">🤲</div>
+    <div style="font-size:15px;font-weight:600;color:#f0f0f0;margin-bottom:8px;">Al-ʿAhd — Covenant</div>
+    <div style="font-size:13px;color:#888;margin-bottom:24px;">Did you preserve your vision?</div>
+    <div style="display:flex;gap:12px;">
+      <button onclick="confirmAhd(false)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:14px;font-weight:600;cursor:pointer;">No</button>
+      <button onclick="confirmAhd(true)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#22c55e;color:#000;font-size:14px;font-weight:600;cursor:pointer;">Yes ✓</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  window._ahdOverlay=overlay;
+}
+
+function confirmAhd(yes){
+  if(window._ahdOverlay){window._ahdOverlay.remove();delete window._ahdOverlay;}
+  if(yes){ hs['hifz_farj']=true; saveHL();renderHabits();renderXP();pushHabits(); }
 }
 function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();pushHabits();}
 function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();pushHabits();}
@@ -1689,7 +1715,7 @@ function toggleDayOff(){
 }
 
 // ─── MODE VOYAGE ───
-const VOYAGE_HABITS = ['hifz_farj','quran_15min','csaa','steps_12k'];
+const VOYAGE_HABITS = ['hifz_farj','quran_15min','csaa','steps_12k','no_youtube','no_music'];
 const VOYAGE_DEEN   = ['salah_waqt'];
 const VOYAGE_RAW    = [];
 
