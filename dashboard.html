@@ -918,7 +918,7 @@ const HABITS = [
   { id:'contact',          name:'Contact',                 desc:'Message someone you appreciate',                   weight:2 },
   { id:'no_music',         name:'No Music',               desc:'No passive music listening',                        weight:2 },
   { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:18000, sliderGoal:12000, sliderStep:500 },
-  { id:'dopamine_detox',   name:'Dopamine Detox',          desc:'No YouTube · No Netflix · No passive scroll · No background music',  weight:6, punitive:true, confirmCheck:'dopamine', startDate:'2026-10-13' },
+  { id:'dopamine_detox',   name:'Dopamine Detox',          desc:'No YouTube · No Netflix · No passive scroll · No background music',  weight:6, punitive:true, confirmCheck:'dopamine', startDate:'2026-10-12' },
 ];
 
 const DEEN = [
@@ -1697,7 +1697,7 @@ function confirmDopamine(yes){
 }
 
 function dopamineDay(){
-  const start=new Date('2026-10-13T00:00:00');
+  const start=new Date('2026-10-12T00:00:00');
   const now=new Date(currentDate+'T00:00:00');
   return Math.min(30, Math.max(1, Math.floor((now-start)/86400000)+1));
 }
