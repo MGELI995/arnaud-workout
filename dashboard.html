@@ -919,6 +919,7 @@ const HABITS = [
   { id:'no_youtube',       name:'No YouTube',              desc:'Zero passive video',                               weight:2 },
   { id:'no_music',         name:'No Music',               desc:'No passive music listening',                        weight:2 },
   { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:18000, sliderGoal:12000, sliderStep:500 },
+  { id:'dopamine_detox',   name:'Dopamine Detox',          desc:'No YouTube · No Netflix · No passive scroll · No background music',  weight:6, punitive:true, confirmCheck:'dopamine', startDate:'2026-10-13' },
 ];
 
 const DEEN = [
@@ -1393,6 +1394,17 @@ function habitRow(h) {
   const done=!!hs[h.id];
   const punitiveOpen = h.punitive && !done;
   const infoBtn = h.info ? `<button class="info-btn" onclick="openScapula(event)">${INFO_SVG}</button>` : '';
+  if(h.id==='dopamine_detox'){
+    const day=dopamineDay();
+    const diff=hs['dopamine_diff'];
+    const diffTag=done&&diff?`<span style="font-size:10px;color:#ef4444;font-weight:700;flex-shrink:0">${diff}/10</span>`:'';
+    const dayTag=`<span style="font-size:10px;font-weight:700;color:${done?'#ef4444':'#555'};flex-shrink:0;margin-right:4px">J${day}/30</span>`;
+    return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')" style="${done?'border-left-color:#ef4444':'border-left-color:#ef4444;opacity:0.7'}">
+      <div class="circle" style="${done?'background:#ef4444;border-color:#ef4444':''}">${done?CHECK_SVG:''}</div>
+      <div class="ri"><div class="rn" style="color:${done?'var(--muted)':'#ef4444'}">${h.name}</div><div class="rd">${h.desc}</div></div>
+      ${dayTag}${diffTag}
+    </div>`;
+  }
   return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')">
     <div class="circle">${done?CHECK_SVG:''}</div>
     <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
@@ -1613,7 +1625,11 @@ function setSlider(id, val){
 function tH(id){
   const h=HABITS.find(x=>x.id===id);
   if(h&&h.slider) return;
-  if(h&&h.confirmCheck&&!hs[id]){
+  if(h&&h.confirmCheck==='dopamine'&&!hs[id]){
+    showDopamineConfirm();
+    return;
+  }
+  if(h&&h.confirmCheck===true&&!hs[id]){
     showAhdConfirm();
     return;
   }
@@ -1642,6 +1658,49 @@ function showAhdConfirm(){
 function confirmAhd(yes){
   if(window._ahdOverlay){window._ahdOverlay.remove();delete window._ahdOverlay;}
   if(yes){ hs['hifz_farj']=true; saveHL();renderHabits();renderXP();pushHabits(); }
+}
+
+function showDopamineConfirm(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  const dayNum = dopamineDay();
+  overlay.innerHTML=`<div style="background:#1a1a1a;border:1px solid #ef4444;border-radius:16px;padding:28px 24px;max-width:340px;width:92%;text-align:center;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#ef4444;margin-bottom:8px;">DOPAMINE DETOX — J${dayNum}/30</div>
+    <div style="font-size:18px;font-weight:700;color:#f0f0f0;margin-bottom:6px;">Did you resist today?</div>
+    <div style="font-size:12px;color:#666;margin-bottom:20px;">No YouTube · No Netflix · No scroll · No passive music</div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">Difficulty today</div>
+      <input type="range" id="dopDiff" min="1" max="10" value="5" style="width:100%;accent-color:#ef4444;">
+      <div style="font-size:20px;font-weight:700;color:#ef4444;margin-top:6px;" id="dopDiffVal">5 / 10</div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button onclick="confirmDopamine(false)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:14px;font-weight:600;cursor:pointer;">Failed ✗</button>
+      <button onclick="confirmDopamine(true)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#ef4444;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Held ✓</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  window._dopOverlay=overlay;
+  const slider=overlay.querySelector('#dopDiff');
+  const val=overlay.querySelector('#dopDiffVal');
+  slider.oninput=()=>{ val.textContent=slider.value+' / 10'; };
+}
+
+function confirmDopamine(yes){
+  const diff = window._dopOverlay ? parseInt(window._dopOverlay.querySelector('#dopDiff')?.value||5) : 5;
+  if(window._dopOverlay){window._dopOverlay.remove();delete window._dopOverlay;}
+  if(yes){
+    hs['dopamine_detox']=true;
+    hs['dopamine_diff']=diff;
+  } else {
+    hs['dopamine_detox']=false;
+  }
+  saveHL();renderHabits();renderXP();pushHabits();
+}
+
+function dopamineDay(){
+  const start=new Date('2026-10-13T00:00:00');
+  const now=new Date(currentDate+'T00:00:00');
+  return Math.min(30, Math.max(1, Math.floor((now-start)/86400000)+1));
 }
 function tD(id){const d=DEEN.find(x=>x.id===id);ds[id]=(ds[id]||0)>=d.max?0:(ds[id]||0)+1;saveHL();renderDeen();renderXP();pushHabits();}
 function tR(id){rs[id]=!rs[id];saveHL();renderRawatib();renderXP();pushHabits();}
