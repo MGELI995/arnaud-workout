@@ -917,7 +917,7 @@ const HABITS = [
   { id:'csaa',             name:'CSAA',                    desc:'2h = 100% · jusqu\'à 5h bonus',                    weight:4, slider:true, sliderMax:300, sliderGoal:120, sliderMaxVoyage:60, startDate:'2026-07-21' },
   { id:'contact',          name:'Contact',                 desc:'Message someone you appreciate',                   weight:2 },
   { id:'no_music',         name:'No Music',               desc:'No passive music listening',                        weight:2 },
-  { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:18000, sliderGoal:12000, sliderStep:500 },
+  { id:'steps_12k',        name:'Steps',                   desc:'12,000 target',                                    weight:3, slider:true, sliderMax:18000, sliderGoal:12000, sliderStep:500, pauseUntil:'2026-10-18' },
   { id:'dopamine_detox',   name:'Dopamine Detox',          desc:'No YouTube · No Netflix · No passive scroll · No background music',  weight:6, punitive:true, confirmCheck:'dopamine', startDate:'2026-10-12' },
 ];
 
@@ -1253,7 +1253,11 @@ function confirmSick(){
 }
 
 function activeHabits(list) {
-  return list.filter(h => !h.startDate || currentDate >= h.startDate);
+  return list.filter(h => {
+    if(h.startDate && currentDate < h.startDate) return false;
+    if(h.pauseUntil && currentDate <= h.pauseUntil) return false;
+    return true;
+  });
 }
 
 function scoreJour() {
