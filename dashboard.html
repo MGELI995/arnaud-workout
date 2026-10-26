@@ -2095,9 +2095,8 @@ function toggleEng(){
 }
 function restoreSections(){
   [['sec_deen','deenbody','deentoggle'],['sec_eng','engbody','engtoggle'],['sec_sport','sportbody','sporttoggle']].forEach(([key,bid,tid])=>{
-    const open = localStorage.getItem(key) !== '0'; // default open for deen/eng, closed for sport
-    const sportDefault = key==='sec_sport';
-    const shouldOpen = localStorage.getItem(key) !== null ? localStorage.getItem(key)==='1' : !sportDefault;
+    const saved = localStorage.getItem(key);
+    const shouldOpen = saved === '1'; // default closed for all
     document.getElementById(bid).classList.toggle('open', shouldOpen);
     document.getElementById(tid).classList.toggle('open', shouldOpen);
   });
