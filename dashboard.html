@@ -709,14 +709,16 @@ nav {
 /* ── Workout overlay ── */
 .wo-overlay {
   display:none; position:fixed; inset:0; z-index:1100;
-  background:var(--bg1); overflow-y:auto;
+  background:#111; overflow-y:auto;
   flex-direction:column;
+  /* force opaque even if --bg1 has alpha in some themes */
 }
 .wo-overlay.open { display:flex; }
+body.wo-active { overflow:hidden; position:fixed; width:100%; }
 .wo-header {
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 16px 10px; border-bottom:1px solid var(--bg3);
-  position:sticky; top:0; background:var(--bg1); z-index:1;
+  position:sticky; top:0; background:#111; z-index:1;
 }
 .wo-header-left { display:flex; flex-direction:column; }
 .wo-session-tag {
@@ -2089,6 +2091,14 @@ function muscuDoneOnly(){
   showToast('Muscu ✓');
 }
 
+function saveWSession(){
+  if(_wSession) localStorage.setItem('_wSession', JSON.stringify(_wSession));
+  else localStorage.removeItem('_wSession');
+}
+function loadWSession(){
+  try { return JSON.parse(localStorage.getItem('_wSession')||'null'); } catch(e){ return null; }
+}
+
 function startWorkout(type){
   closeMuscuConfirm();
   const exos = type === 'S1' ? WORKOUT_S1 : WORKOUT_S2;
@@ -2100,15 +2110,21 @@ function startWorkout(type){
       sets: Array.from({length: e.sets}, () => ({ reps: typeof e.reps === 'number' ? e.reps : null, kg: '' }))
     }))
   };
+  saveWSession();
+  openWorkoutOverlay();
+}
+
+function openWorkoutOverlay(){
   renderWorkoutExo();
   document.getElementById('woOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('wo-active');
 }
 
 function closeWorkout(){
   document.getElementById('woOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.classList.remove('wo-active');
   _wSession = null;
+  saveWSession();
 }
 
 function renderWorkoutExo(){
@@ -2145,7 +2161,7 @@ function renderWorkoutExo(){
       <div class="wo-reps-cell">${repLabel} reps${exo.note?' '+exo.note:''}</div>
       <input class="wo-kg-input" type="number" step="2.5" min="0" placeholder="kg"
         value="${s.kg||''}" inputmode="decimal"
-        onchange="_wSession.data[${exoIdx}].sets[${i}].kg=this.value; renderWorkoutExo()">
+        onchange="_wSession.data[${exoIdx}].sets[${i}].kg=this.value; saveWSession(); renderWorkoutExo()">
     </div>`;
   }).join('');
 
@@ -2175,12 +2191,14 @@ function renderWorkoutExo(){
 function prevWorkoutExo(){
   if(!_wSession || _wSession.exoIdx === 0) return;
   _wSession.exoIdx--;
+  saveWSession();
   renderWorkoutExo();
 }
 
 function nextWorkoutExo(){
   if(!_wSession || _wSession.exoIdx >= _wSession.exos.length - 1) return;
   _wSession.exoIdx++;
+  saveWSession();
   renderWorkoutExo();
 }
 
@@ -2522,6 +2540,14 @@ async function init(){
   await loadHL();
   renderHabits();renderDeen();renderRawatib();renderEnglish();renderBonus();renderXP();
   loadResilience();
+  // Restore workout session if app was closed mid-séance
+  const saved = loadWSession();
+  if(saved){
+    // Re-attach the static exo arrays (not serializable references)
+    const exos = saved.type === 'S1' ? WORKOUT_S1 : WORKOUT_S2;
+    _wSession = { ...saved, exos };
+    openWorkoutOverlay();
+  }
 }
 init();
 
