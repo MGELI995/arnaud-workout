@@ -705,6 +705,119 @@ nav {
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── Workout overlay ── */
+.wo-overlay {
+  display:none; position:fixed; inset:0; z-index:1100;
+  background:var(--bg1); overflow-y:auto;
+  flex-direction:column;
+}
+.wo-overlay.open { display:flex; }
+.wo-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px 10px; border-bottom:1px solid var(--bg3);
+  position:sticky; top:0; background:var(--bg1); z-index:1;
+}
+.wo-header-left { display:flex; flex-direction:column; }
+.wo-session-tag {
+  font-size:11px; font-weight:700; letter-spacing:0.08em;
+  color:var(--green); text-transform:uppercase;
+}
+.wo-exo-counter { font-size:11px; color:var(--muted); margin-top:2px; }
+.wo-close-btn {
+  background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:22px; line-height:1; padding:4px 6px;
+}
+.wo-body { flex:1; padding:16px; display:flex; flex-direction:column; gap:16px; }
+.wo-exo-name {
+  font-size:20px; font-weight:700; color:var(--fg);
+  line-height:1.2;
+}
+.wo-exo-meta { font-size:12px; color:var(--muted); margin-top:3px; }
+.wo-img-wrap {
+  border-radius:10px; overflow:hidden; background:var(--bg2);
+  max-height:200px; display:flex; align-items:center; justify-content:center;
+}
+.wo-img-wrap img { width:100%; max-height:200px; object-fit:cover; }
+.wo-tips {
+  background:var(--bg2); border-radius:10px; padding:12px 14px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.wo-tip {
+  font-size:12px; color:var(--fg); line-height:1.4;
+  display:flex; gap:8px;
+}
+.wo-tip-icon { flex-shrink:0; font-size:14px; line-height:1.4; }
+.wo-sets-table { display:flex; flex-direction:column; gap:6px; }
+.wo-set-row {
+  display:grid; grid-template-columns:32px 1fr 1fr; align-items:center;
+  gap:8px;
+}
+.wo-set-num {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--bg3); color:var(--muted);
+  font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.wo-set-num.done-set { background:var(--green); color:#000; }
+.wo-reps-cell {
+  font-size:13px; color:var(--fg);
+  background:var(--bg2); border-radius:8px;
+  padding:8px 10px; text-align:center;
+}
+.wo-kg-input {
+  font-size:14px; font-weight:600; color:var(--fg);
+  background:var(--bg2); border:1.5px solid var(--bg3);
+  border-radius:8px; padding:7px 10px;
+  text-align:center; width:100%;
+  -webkit-appearance:none; appearance:none;
+}
+.wo-kg-input:focus { outline:none; border-color:var(--green); }
+.wo-nav {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  padding:0 16px 20px;
+}
+.wo-btn {
+  padding:14px; border-radius:12px; border:none; cursor:pointer;
+  font-size:14px; font-weight:700; transition:opacity 0.15s;
+}
+.wo-btn:active { opacity:0.7; }
+.wo-btn-prev { background:var(--bg3); color:var(--muted); }
+.wo-btn-prev:disabled { opacity:0.3; cursor:default; }
+.wo-btn-next { background:var(--green); color:#000; }
+.wo-btn-finish { background:var(--green); color:#000; grid-column:1/-1; }
+
+/* Muscu confirm modal */
+.mc-modal {
+  display:none; position:fixed; inset:0; z-index:1200;
+  background:rgba(0,0,0,0.7); align-items:flex-end;
+}
+.mc-modal.open { display:flex; }
+.mc-sheet {
+  width:100%; background:var(--bg2);
+  border-radius:20px 20px 0 0; padding:24px 20px 32px;
+  display:flex; flex-direction:column; gap:14px;
+  animation:slideUp 0.22s ease;
+}
+@keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+.mc-title { font-size:16px; font-weight:700; color:var(--fg); text-align:center; }
+.mc-subtitle { font-size:12px; color:var(--muted); text-align:center; margin-top:-8px; }
+.mc-options { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mc-opt {
+  padding:16px 12px; border-radius:14px; border:2px solid var(--bg3);
+  background:var(--bg1); cursor:pointer; text-align:center;
+  transition:border-color 0.15s;
+}
+.mc-opt:hover { border-color:var(--green); }
+.mc-opt-label { font-size:13px; font-weight:700; color:var(--fg); }
+.mc-opt-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+.mc-no-btn {
+  padding:12px; border-radius:12px; border:none;
+  background:var(--bg3); color:var(--muted);
+  font-size:13px; font-weight:600; cursor:pointer;
+  text-align:center;
+}
 </style>
 </head>
 <body>
@@ -900,6 +1013,117 @@ const MUSCU_EXOS = [
   { id:'sdtTrap', name:'Soulevé de terre (trap bar)', short:'SDT' },
   { id:'dips',    name:'Dips lestés',                 short:'Dips' },
 ];
+
+const WORKOUT_S1 = [
+  { id:'sdt',      name:'Soulevé de terre trap bar', sets:4, reps:5 },
+  { id:'tractions',name:'Tractions',                 sets:4, reps:6 },
+  { id:'dips',     name:'Dips',                      sets:3, reps:8 },
+  { id:'fentes',   name:'Fentes bulgares',            sets:3, reps:8, note:'/ jambe' },
+  { id:'shrugs',   name:'Shrugs trap bar',            sets:3, reps:10 },
+  { id:'releves',  name:'Relevés de jambes',          sets:3, reps:'max' },
+];
+const WORKOUT_S2 = [
+  { id:'devInc',   name:'Développé incliné haltères', sets:4, reps:8 },
+  { id:'rowing',   name:'Rowing haltère un bras',      sets:4, reps:10, note:'/bras' },
+  { id:'elev',     name:'Élévations latérales',        sets:3, reps:12 },
+  { id:'curl',     name:'Curl marteau',                sets:3, reps:10 },
+  { id:'triceps',  name:'Triceps poulie',              sets:3, reps:12 },
+];
+
+let _wSession = null; // {type:'S1'|'S2', exos:[], exoIdx:0, data:[{sets:[{reps,kg}]}]}
+
+const WORKOUT_TIPS = {
+  sdt: {
+    img: 'muscu-img/delavier_souleve_de_terre.jpg',
+    tips: [
+      { icon:'⚠️', text:'Blocage obligatoire : grande inspiration avant de tirer, expire seulement en haut.' },
+      { icon:'🦵', text:'Hanches hautes dès le départ (morpho bras longs) — dos plat, pas de dos rond.' },
+      { icon:'💡', text:'Pense "je pousse le sol" plutôt que "je tire la barre".' },
+      { icon:'📍', text:'Centre-toi bien dans la trap bar, poignées neutres.' },
+    ],
+    img2: 'muscu-img/delavier_blocage.jpg',
+  },
+  tractions: {
+    img: 'muscu-img/delavier_tractions.jpg',
+    tips: [
+      { icon:'🔑', text:'Départ scapula : abaisse les épaules AVANT de plier les coudes — c\'est ce qui engage le dos.' },
+      { icon:'⚠️', text:'Jamais de verrouillage complet des coudes en bas — reste léger sur les hanches.' },
+      { icon:'✋', text:'Prise ni trop large ni trop serrée, légèrement plus que les épaules.' },
+    ],
+  },
+  dips: {
+    img: 'muscu-img/delavier_dips.jpg',
+    tips: [
+      { icon:'📐', text:'Amplitude max 90° — au-delà tu sollicites ta scapula fragile.' },
+      { icon:'💪', text:'Buste penché légèrement en avant pour charger les pectoraux.' },
+      { icon:'⏱️', text:'Descente contrôlée en 2 secondes.' },
+    ],
+  },
+  fentes: {
+    img: 'muscu-img/delavier_fentes_halteres.jpg',
+    tips: [
+      { icon:'🦵', text:'Commence par la jambe GAUCHE, même reps à droite.' },
+      { icon:'📏', text:'Pas moyen-grand → fessiers + ischios (pas quad). Si genou douloureux, allonge le pas.' },
+      { icon:'🎯', text:'Genou suit l\'axe du pied — ne rentre jamais vers l\'intérieur.' },
+    ],
+  },
+  shrugs: {
+    img: 'muscu-img/delavier_shrugs.jpg',
+    tips: [
+      { icon:'🪢', text:'Bras = cordes : zéro flexion des coudes, les épaules seules montent.' },
+      { icon:'⏸️', text:'Pause 1 seconde en haut, épaules aux oreilles.' },
+      { icon:'💪', text:'Tu peux charger lourd — tes trapèzes sont chauds après le SDT.' },
+    ],
+  },
+  releves: {
+    img: 'muscu-img/delavier_releve_jambes.jpg',
+    tips: [
+      { icon:'🔄', text:'Enroule le bassin vers le sternum en haut — SANS l\'enroulement, c\'est que les hanches.' },
+      { icon:'🚫', text:'Zéro balancier — pause 1 s en bas si tu oscilles.' },
+      { icon:'🧘', text:'Après la série : reste pendu 10-20 s tout relâché → décompression du dos.' },
+    ],
+  },
+  devInc: {
+    img: 'muscu-img/delavier_developpe_incline.jpg',
+    tips: [
+      { icon:'📐', text:'Banc à 30-45° max — au-dessus de 60° ce sont les épaules qui travaillent.' },
+      { icon:'🦴', text:'Omoplates serrées et basses contre le banc avant de démarrer, elles y restent.' },
+      { icon:'💪', text:'Coudes à ~45° du buste — pas à 90° (protège l\'épaule).' },
+    ],
+  },
+  rowing: {
+    img: 'muscu-img/delavier_rowing_haltere.jpg',
+    tips: [
+      { icon:'🔑', text:'Omoplate vers la colonne PUIS coude tire — pas le contraire.' },
+      { icon:'🎯', text:'Pense "coude vers la hanche", pas "main vers l\'épaule".' },
+      { icon:'🦵', text:'Commence par le bras GAUCHE (scapula), même reps à droite.' },
+    ],
+  },
+  elev: {
+    img: 'muscu-img/delavier_elevations_laterales.jpg',
+    tips: [
+      { icon:'✋', text:'Stop à l\'horizontale — jamais au-dessus (risque conflit sous-acromial, scapula).' },
+      { icon:'🔁', text:'Léger, propre, lent. Si tu balances le buste → trop lourd.' },
+      { icon:'💡', text:'Coudes légèrement fléchis, petits doigts pas plus hauts que les pouces.' },
+    ],
+  },
+  curl: {
+    img: 'muscu-img/delavier_curl_marteau.jpg',
+    tips: [
+      { icon:'🔨', text:'Prise marteau = pouces vers le haut — travaille le brachio-radial + grip pour le grappling.' },
+      { icon:'📌', text:'Coudes collés au corps — ne partent pas vers l\'avant.' },
+      { icon:'⏱️', text:'Descente lente (2 s), bras presque tendus en bas.' },
+    ],
+  },
+  triceps: {
+    img: 'muscu-img/delavier_triceps_poulie.jpg',
+    tips: [
+      { icon:'🔧', text:'Prends la CORDE (pas la barre droite) — meilleur travail du chef latéral.' },
+      { icon:'📌', text:'Coudes = charnières fixes collées aux côtes. Seuls les avant-bras bougent.' },
+      { icon:'⏸️', text:'Écarte les deux brins en bas + tiens 1-2 s bras tendus.' },
+    ],
+  },
+};
 
 function getMuscuData(){ try{ return JSON.parse(localStorage.getItem('muscu_data')||'{}'); }catch(e){ return {}; } }
 function saveMuscuEntry(kg_sdt, kg_dips){
@@ -1845,10 +2069,159 @@ function toggleSport(){
 }
 
 function tB(id){
+  if(id === 'muscu'){ showMuscuConfirm(); return; }
   const b=BONUS.find(x=>x.id===id);
   if(b&&b.max&&b.max>1){ hs[id]=((hs[id]||0)>=b.max)?0:(hs[id]||0)+1; }
   else{ hs[id]=!hs[id]; }
   saveHL(); renderHabits(); renderBonus(); renderXP(); pushHabits();
+}
+
+function showMuscuConfirm(){
+  document.getElementById('mcModal').classList.add('open');
+}
+function closeMuscuConfirm(){
+  document.getElementById('mcModal').classList.remove('open');
+}
+function muscuDoneOnly(){
+  closeMuscuConfirm();
+  hs['muscu'] = true;
+  saveHL(); renderHabits(); renderBonus(); renderXP(); pushHabits();
+  showToast('Muscu ✓');
+}
+
+function startWorkout(type){
+  closeMuscuConfirm();
+  const exos = type === 'S1' ? WORKOUT_S1 : WORKOUT_S2;
+  _wSession = {
+    type,
+    exos,
+    exoIdx: 0,
+    data: exos.map(e => ({
+      sets: Array.from({length: e.sets}, () => ({ reps: typeof e.reps === 'number' ? e.reps : null, kg: '' }))
+    }))
+  };
+  renderWorkoutExo();
+  document.getElementById('woOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWorkout(){
+  document.getElementById('woOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  _wSession = null;
+}
+
+function renderWorkoutExo(){
+  if(!_wSession) return;
+  const { exos, exoIdx, data, type } = _wSession;
+  const exo = exos[exoIdx];
+  const tips = WORKOUT_TIPS[exo.id] || {};
+  const exoData = data[exoIdx];
+  const isLast = exoIdx === exos.length - 1;
+
+  document.getElementById('woSessionTag').textContent = `Séance ${type}`;
+  document.getElementById('woExoCounter').textContent = `${exoIdx+1} / ${exos.length}`;
+
+  const meta = exo.note
+    ? `${exo.sets} séries × ${exo.reps} reps ${exo.note}`
+    : `${exo.sets} séries × ${typeof exo.reps === 'number' ? exo.reps + ' reps' : exo.reps}`;
+
+  const imgHtml = tips.img
+    ? `<div class="wo-img-wrap"><img src="${tips.img}" alt="${exo.name}" loading="lazy"/></div>`
+    : '';
+  const img2Html = tips.img2
+    ? `<div class="wo-img-wrap" style="margin-top:-8px"><img src="${tips.img2}" alt="technique" loading="lazy"/></div>`
+    : '';
+
+  const tipsHtml = (tips.tips||[]).map(t =>
+    `<div class="wo-tip"><span class="wo-tip-icon">${t.icon}</span><span>${t.text}</span></div>`
+  ).join('');
+
+  const setsHtml = exoData.sets.map((s, i) => {
+    const numCls = s.kg ? 'done-set' : '';
+    const repLabel = typeof s.reps === 'number' ? s.reps : (exo.reps === 'max' ? 'max' : s.reps || exo.reps);
+    return `<div class="wo-set-row">
+      <div class="wo-set-num ${numCls}">${i+1}</div>
+      <div class="wo-reps-cell">${repLabel} reps${exo.note?' '+exo.note:''}</div>
+      <input class="wo-kg-input" type="number" step="2.5" min="0" placeholder="kg"
+        value="${s.kg||''}" inputmode="decimal"
+        onchange="_wSession.data[${exoIdx}].sets[${i}].kg=this.value; renderWorkoutExo()">
+    </div>`;
+  }).join('');
+
+  document.getElementById('woBody').innerHTML = `
+    <div>
+      <div class="wo-exo-name">${exo.name}</div>
+      <div class="wo-exo-meta">${meta}</div>
+    </div>
+    ${imgHtml}${img2Html}
+    ${tipsHtml ? `<div class="wo-tips">${tipsHtml}</div>` : ''}
+    <div class="wo-sets-table">${setsHtml}</div>
+  `;
+
+  const nav = document.getElementById('woNav');
+  nav.innerHTML = `
+    <button class="wo-btn wo-btn-prev" onclick="prevWorkoutExo()" ${exoIdx===0?'disabled':''}>← Précédent</button>
+    ${isLast
+      ? `<button class="wo-btn wo-btn-next wo-btn-finish" onclick="finishWorkout()">Terminer la séance ✓</button>`
+      : `<button class="wo-btn wo-btn-next" onclick="nextWorkoutExo()">Suivant →</button>`
+    }
+  `;
+  // Restore focus on first kg input
+  const firstInput = document.querySelector('#woBody .wo-kg-input');
+  if(firstInput && !firstInput.value) firstInput.focus();
+}
+
+function prevWorkoutExo(){
+  if(!_wSession || _wSession.exoIdx === 0) return;
+  _wSession.exoIdx--;
+  renderWorkoutExo();
+}
+
+function nextWorkoutExo(){
+  if(!_wSession || _wSession.exoIdx >= _wSession.exos.length - 1) return;
+  _wSession.exoIdx++;
+  renderWorkoutExo();
+}
+
+function finishWorkout(){
+  if(!_wSession) return;
+  const { type, exos, data } = _wSession;
+
+  // Build markdown block
+  const lines = [`## Séance ${type} — ${currentDate}`,''];
+  exos.forEach((exo, i) => {
+    lines.push(`### ${exo.name}`);
+    data[i].sets.forEach((s, j) => {
+      const rLabel = typeof s.reps === 'number' ? s.reps : exo.reps;
+      const kgLabel = s.kg ? `${s.kg} kg` : '—';
+      lines.push(`- Série ${j+1}: ${rLabel} reps × ${kgLabel}`);
+    });
+    lines.push('');
+  });
+  const md = lines.join('\n');
+
+  // Mark muscu done
+  hs['muscu'] = true;
+  saveHL(); renderHabits(); renderBonus(); renderXP(); pushHabits();
+  closeWorkout();
+  showToast('Séance enregistrée ✓');
+  pushWorkout(md);
+}
+
+async function pushWorkout(md){
+  try {
+    const WORKER = 'https://blue-band-f7d7workout-obsidian.arnaudbuch400.workers.dev/';
+    // Fetch existing file
+    const r = await fetch(`${WORKER}?section=MUSCU`);
+    let existing = r.ok ? await r.text() : '';
+    const newContent = existing + '\n' + md;
+    await fetch(WORKER, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ section: 'MUSCU', content: newContent })
+    });
+  } catch(e){ console.warn('pushWorkout failed', e); }
 }
 function tCheat(){ss[CHEAT.id]=!ss[CHEAT.id];saveHL();renderBonus();pushHabits();}
 
@@ -2158,5 +2531,37 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+<!-- Muscu confirm modal -->
+<div id="mcModal" class="mc-modal" onclick="if(event.target===this)closeMuscuConfirm()">
+  <div class="mc-sheet">
+    <div class="mc-title">Lancer une séance ?</div>
+    <div class="mc-subtitle">Choisis ton programme ou marque directement.</div>
+    <div class="mc-options">
+      <div class="mc-opt" onclick="startWorkout('S1')">
+        <div class="mc-opt-label">Séance S1</div>
+        <div class="mc-opt-sub">SDT · Tractions · Dips<br>Fentes · Shrugs · Relevés</div>
+      </div>
+      <div class="mc-opt" onclick="startWorkout('S2')">
+        <div class="mc-opt-label">Séance S2</div>
+        <div class="mc-opt-sub">Dev. incliné · Rowing<br>Élév. lat. · Curl · Triceps</div>
+      </div>
+    </div>
+    <div class="mc-no-btn" onclick="muscuDoneOnly()">✗ Juste marquer fait</div>
+  </div>
+</div>
+
+<!-- Workout session overlay -->
+<div id="woOverlay" class="wo-overlay">
+  <div class="wo-header">
+    <div class="wo-header-left">
+      <span id="woSessionTag" class="wo-session-tag">Séance S1</span>
+      <span id="woExoCounter" class="wo-exo-counter">1 / 6</span>
+    </div>
+    <button class="wo-close-btn" onclick="closeWorkout()">✕</button>
+  </div>
+  <div id="woBody" class="wo-body"></div>
+  <div id="woNav" class="wo-nav"></div>
+</div>
 </body>
 </html>
