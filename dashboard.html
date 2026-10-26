@@ -2102,13 +2102,24 @@ function loadWSession(){
 function startWorkout(type){
   closeMuscuConfirm();
   const exos = type === 'S1' ? WORKOUT_S1 : WORKOUT_S2;
+
+  // Find last session of same type to pre-fill kg
+  const log = getWorkoutLog();
+  const lastSession = [...log].reverse().find(s => s.type === type);
+
   _wSession = {
     type,
     exos,
     exoIdx: 0,
-    data: exos.map(e => ({
-      sets: Array.from({length: e.sets}, () => ({ reps: typeof e.reps === 'number' ? e.reps : null, kg: '' }))
-    }))
+    data: exos.map(e => {
+      const lastExo = lastSession?.exos.find(x => x.id === e.id);
+      return {
+        sets: Array.from({length: e.sets}, (_, i) => ({
+          reps: typeof e.reps === 'number' ? e.reps : null,
+          kg: lastExo?.sets[i]?.kg ?? ''
+        }))
+      };
+    })
   };
   saveWSession();
   openWorkoutOverlay();
