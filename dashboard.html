@@ -1037,6 +1037,7 @@ const WORKOUT_S1 = [
 ];
 const WORKOUT_S2 = [
   { id:'devInc',   name:'Développé incliné haltères', sets:4, reps:8 },
+  { id:'devDecl',  name:'Développé décliné guidé',    sets:3, reps:8 },
   { id:'rowing',   name:'Rowing haltère un bras',      sets:4, reps:10, note:'/bras' },
   { id:'elev',     name:'Élévations latérales',        sets:3, reps:12 },
   { id:'curl',     name:'Curl marteau',                sets:3, reps:10 },
@@ -1104,12 +1105,22 @@ const WORKOUT_TIPS = {
       { icon:'💪', text:'Coudes à ~45° du buste — pas à 90° (protège l\'épaule).' },
     ],
   },
+  devDecl: {
+    tips: [
+      { icon:'✋', text:'Prise moyenne, un peu plus large que les épaules — pas plus (épaule).' },
+      { icon:'🦴', text:'Omoplates serrées et basses contre le banc : le rail ne corrige pas ta scapula gauche.' },
+      { icon:'📍', text:'Descends sur le bas des pecs, stop à 2-3 cm de la poitrine (bras longs, inutile de toucher).' },
+      { icon:'💪', text:'Coudes à ~45° du buste. 8-10 reps, 1-2 en réserve.' },
+      { icon:'🦵', text:'Genou gauche : si ça tire quand tu te cales sous les boudins, arrête cet exo.' },
+    ],
+  },
   rowing: {
     img: 'muscu-img/delavier_rowing_haltere.jpg',
     tips: [
       { icon:'🔑', text:'Omoplate vers la colonne PUIS coude tire — pas le contraire.' },
       { icon:'🎯', text:'Pense "coude vers la hanche", pas "main vers l\'épaule".' },
       { icon:'🦵', text:'Commence par le bras GAUCHE (scapula), même reps à droite.' },
+      { icon:'🩹', text:'Genou gauche blessé : les deux pieds au sol, buste penché, main en appui sur le banc.' },
     ],
   },
   elev: {
