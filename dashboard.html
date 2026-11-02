@@ -1577,7 +1577,7 @@ function renderXP() {
   const xp = voyageMode ? xpDeenVoyage() : xpDeen();
   const deenPct = Math.min(Math.round(xp/200*100), 100);
   const engXp = xpEnglish();
-  const engPct = Math.min(Math.round(engXp/ENGLISH_DAY*100), 100);
+  const engPct = Math.min(Math.round(engXp/xpEnglishMax()*100), 100);
 
   elA.textContent = deenPct+'%'; elA.style.color = color(deenPct);
   elD.textContent = dounia+'%';  elD.style.color = color(dounia);
