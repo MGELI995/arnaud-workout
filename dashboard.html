@@ -1963,13 +1963,12 @@ function tH(id){
 function showAhdConfirm(){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
-  overlay.innerHTML=`<div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:28px 24px;max-width:320px;width:90%;text-align:center;">
-    <div style="font-size:22px;margin-bottom:12px;">🤲</div>
-    <div style="font-size:15px;font-weight:600;color:#f0f0f0;margin-bottom:8px;">Al-ʿAhd — Covenant</div>
-    <div style="font-size:13px;color:#888;margin-bottom:24px;">Did you preserve your vision?</div>
-    <div style="display:flex;gap:12px;">
-      <button onclick="confirmAhd(false)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:14px;font-weight:600;cursor:pointer;">No</button>
-      <button onclick="confirmAhd(true)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#22c55e;color:#000;font-size:14px;font-weight:600;cursor:pointer;">Yes ✓</button>
+  overlay.innerHTML=`<div style="background:#161616;border:0.5px solid #2a2a2a;border-radius:18px;padding:26px 22px;max-width:320px;width:90%;text-align:center;">
+    <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:6px;">Al-ʿAhd</div>
+    <div style="font-size:14px;color:#8a8a8a;margin-bottom:22px;">As-tu préservé ton regard aujourd'hui ?</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmAhd(false)" style="flex:1;padding:13px;border-radius:12px;border:0.5px solid #333;background:transparent;color:#8a8a8a;font-size:14px;cursor:pointer;">Non</button>
+      <button onclick="confirmAhd(true)" style="flex:1;padding:13px;border-radius:12px;border:none;background:#f0f0f0;color:#0c0c0c;font-size:14px;font-weight:600;cursor:pointer;">Oui</button>
     </div>
   </div>`;
   document.body.appendChild(overlay);
@@ -1986,13 +1985,13 @@ function showAhdRelapse(){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
   const prev=(hs['hifz_farj_note']||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  overlay.innerHTML=`<div style="background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:24px 20px;max-width:340px;width:92%;text-align:center;">
-    <div style="font-size:15px;font-weight:600;color:#f0f0f0;margin-bottom:6px;">You come back. You don't bury yourself.</div>
-    <div style="font-size:12px;color:#888;margin-bottom:14px;">One line: where, when, how you felt (tired, alone, angry, in bed…)</div>
-    <textarea id="ahdNote" rows="3" style="width:100%;box-sizing:border-box;background:#111;color:#eee;border:1px solid #333;border-radius:10px;padding:10px;font-size:13px;resize:none;">${prev}</textarea>
-    <div style="display:flex;gap:12px;margin-top:14px;">
-      <button onclick="saveAhdRelapse(false)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #555;background:transparent;color:#aaa;font-size:13px;cursor:pointer;">Later</button>
-      <button onclick="saveAhdRelapse(true)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#22c55e;color:#000;font-size:13px;font-weight:600;cursor:pointer;">Tawbah done 🤲</button>
+  overlay.innerHTML=`<div style="background:#161616;border:0.5px solid #2a2a2a;border-radius:18px;padding:24px 20px;max-width:340px;width:92%;text-align:center;">
+    <div style="font-size:16px;font-weight:600;color:#f0f0f0;margin-bottom:6px;">On revient. On ne s'enterre pas.</div>
+    <div style="font-size:13px;color:#8a8a8a;margin-bottom:14px;">Une ligne : où, quand, dans quel état (fatigué, seul, énervé, au lit…)</div>
+    <textarea id="ahdNote" rows="3" style="width:100%;box-sizing:border-box;background:#0c0c0c;color:#eee;border:0.5px solid #2a2a2a;border-radius:12px;padding:10px;font-size:14px;resize:none;">${prev}</textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button onclick="saveAhdRelapse(false)" style="flex:1;padding:13px;border-radius:12px;border:0.5px solid #333;background:transparent;color:#8a8a8a;font-size:14px;cursor:pointer;">Plus tard</button>
+      <button onclick="saveAhdRelapse(true)" style="flex:1;padding:13px;border-radius:12px;border:none;background:#f0f0f0;color:#0c0c0c;font-size:14px;font-weight:600;cursor:pointer;">Tawbah faite</button>
     </div>
   </div>`;
   document.body.appendChild(overlay);
@@ -2013,18 +2012,18 @@ function showDopamineConfirm(){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
   const dayNum = dopamineDay();
-  overlay.innerHTML=`<div style="background:#1a1a1a;border:1px solid #ef4444;border-radius:16px;padding:28px 24px;max-width:340px;width:92%;text-align:center;">
-    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#ef4444;margin-bottom:8px;">DOPAMINE DETOX — MON→SAT</div>
-    <div style="font-size:18px;font-weight:700;color:#f0f0f0;margin-bottom:6px;">Did you resist today?</div>
-    <div style="font-size:12px;color:#666;margin-bottom:20px;">No YouTube · No Netflix · No scroll · No music while working<br>Sunday is your free day.</div>
+  overlay.innerHTML=`<div style="background:#161616;border:0.5px solid #2a2a2a;border-radius:18px;padding:26px 22px;max-width:340px;width:92%;text-align:center;">
+    <div style="font-size:12px;color:#8a8a8a;margin-bottom:6px;">Détox écrans · lundi → samedi</div>
+    <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:6px;">Tu as tenu aujourd'hui ?</div>
+    <div style="font-size:13px;color:#5f5f5f;margin-bottom:20px;">Pas de YouTube, Netflix, scroll, ni musique en bossant. Le dimanche est libre.</div>
     <div style="margin-bottom:20px;">
-      <div style="font-size:12px;color:#888;margin-bottom:8px;">Difficulty today</div>
-      <input type="range" id="dopDiff" min="1" max="10" value="5" style="width:100%;accent-color:#ef4444;">
-      <div style="font-size:20px;font-weight:700;color:#ef4444;margin-top:6px;" id="dopDiffVal">5 / 10</div>
+      <div style="font-size:12px;color:#8a8a8a;margin-bottom:8px;">Difficulté</div>
+      <input type="range" id="dopDiff" min="1" max="10" value="5" style="width:100%;accent-color:#f0f0f0;">
+      <div style="font-size:18px;font-weight:600;color:#f0f0f0;margin-top:6px;" id="dopDiffVal">5 / 10</div>
     </div>
-    <div style="display:flex;gap:12px;">
-      <button onclick="confirmDopamine(false)" style="flex:1;padding:12px;border-radius:10px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:14px;font-weight:600;cursor:pointer;">Failed ✗</button>
-      <button onclick="confirmDopamine(true)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#ef4444;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Held ✓</button>
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmDopamine(false)" style="flex:1;padding:13px;border-radius:12px;border:0.5px solid #333;background:transparent;color:#8a8a8a;font-size:14px;cursor:pointer;">Craqué</button>
+      <button onclick="confirmDopamine(true)" style="flex:1;padding:13px;border-radius:12px;border:none;background:#f0f0f0;color:#0c0c0c;font-size:14px;font-weight:600;cursor:pointer;">Tenu</button>
     </div>
   </div>`;
   document.body.appendChild(overlay);
