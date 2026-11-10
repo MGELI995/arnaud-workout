@@ -481,7 +481,7 @@ nav {
 .overlay {
   position: fixed; inset: 0;
   background: var(--bg);
-  z-index: 100;
+  z-index: 1000;
   display: none;
   flex-direction: column;
   overflow: hidden;
@@ -822,6 +822,80 @@ body.wo-active { overflow:hidden; position:fixed; width:100%; }
   font-size:13px; font-weight:600; cursor:pointer;
   text-align:center;
 }
+/* ══════════ REDESIGN — LISTE NUE (nov 2026) ══════════ */
+:root { --bg:#0c0c0c; --line:rgba(255,255,255,0.07); --sub:#8a8a8a; --muted:#5f5f5f; }
+html, body { background: var(--bg); }
+header { border-bottom: none; }
+.h-name { font-weight: 500; color: var(--sub); }
+.dayoff-btn, .voyage-btn { border: none !important; background: transparent; color: var(--muted); font-size: 11px; letter-spacing: 0; text-transform: none; padding: 4px 6px; }
+.dayoff-btn.active, .voyage-btn.active { color: var(--text); }
+.date-nav { border-bottom: none !important; }
+.content { padding: 4px 22px calc(var(--nav-h) + 28px); }
+
+.hero { padding: 18px 0 8px; }
+.hero-num { font-size: 64px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; color: var(--text); }
+.hero-pct { font-size: 26px; font-weight: 500; color: var(--sub); margin-left: 2px; letter-spacing: 0; }
+.hero-sub { font-size: 13px; color: var(--sub); margin-top: 10px; }
+.hero-sub span { color: var(--text); font-weight: 500; }
+.hero-bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 16px; overflow: hidden; }
+.hero-bar > div { height: 100%; width: 0; background: var(--green); border-radius: 2px; transition: width .5s ease; }
+
+.section { font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--sub); padding: 30px 0 4px; }
+.section::before { display: none !important; }
+
+.row, .drow, .slider-row, .rt {
+  background: transparent !important; border: none !important; border-bottom: 0.5px solid var(--line) !important;
+  border-radius: 0 !important; margin: 0 !important; padding: 16px 0 !important; transform: none !important; opacity: 1 !important;
+}
+.row:active, .drow:active, .rt:active { background: rgba(255,255,255,0.03) !important; }
+.row > *, .drow > * { order: 1; }
+.row .ri, .drow .ri { order: 0; }
+.row .circle, .drow .dcircle { order: 3; }
+.rn { font-size: 16px; font-weight: 400; color: var(--text) !important; text-decoration: none !important; }
+.rd { font-size: 12px; color: var(--muted); margin-top: 3px; }
+#hlist .rd, #vlist .rd { display: none; }
+.row.done .rn, .drow.full .rn { color: var(--sub) !important; }
+
+.circle, .dcircle { width: 24px; height: 24px; border: 1.5px solid #3a3a3a !important; background: transparent; transform: none !important; color: var(--sub); font-size: 10px; }
+.row.done .circle, .drow.full .dcircle { background: var(--green) !important; border-color: var(--green) !important; color: #0c0c0c; }
+.drow.partial .dcircle { border-color: var(--green) !important; color: var(--green); }
+.circle svg { width: 12px; height: 12px; }
+.d.on { background: var(--green); }
+.dots-wrap { gap: 3px; }
+.d { width: 5px; height: 5px; background: #2a2a2a; }
+.info-btn { border: none; width: 26px; height: 26px; color: var(--muted); }
+
+.slider-row-top { margin-bottom: 12px; }
+.slider-name { font-size: 16px; font-weight: 400; }
+.slider-val { font-size: 13px; font-weight: 400; color: var(--sub); }
+.slider-val.zero { color: var(--muted); }
+.slider-desc { display: none; }
+.habit-slider { height: 3px; background: var(--line); }
+.habit-slider::-webkit-slider-thumb { width: 20px; height: 20px; background: var(--text); box-shadow: none; border: none; }
+.habit-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--text); border: none; }
+
+.rt { font-size: 16px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--text) !important; }
+.rt-right { display: flex; align-items: center; gap: 12px; }
+.rt-pct { font-size: 13px; color: var(--sub); }
+.rt-arrow { font-size: 20px; color: var(--muted); transform: none !important; line-height: 1; }
+#rt { font-size: 14px; color: var(--sub) !important; }
+
+.sheet { position: fixed; inset: 0; z-index: 900; background: var(--bg); overflow-y: auto; padding: 0 22px 40px; display: block !important;
+  transform: translateX(100%); transition: transform .28s cubic-bezier(.2,.8,.2,1); visibility: hidden; }
+.sheet.open { transform: translateX(0); visibility: visible; }
+.sheet-head { position: sticky; top: 0; background: var(--bg); display: flex; align-items: center; gap: 10px; padding: 14px 0 12px; font-size: 22px; font-weight: 600; z-index: 2; }
+.sheet-back { background: none; border: none; color: var(--sub); font-size: 30px; line-height: 1; padding: 0 8px 4px 0; cursor: pointer; font-family: var(--font); }
+#rbody { display: none; }
+#rbody.open { display: block; }
+
+.note { background: transparent; border: none; border-bottom: 0.5px solid var(--line); border-radius: 0; padding: 10px 0; font-size: 15px; min-height: 48px; }
+.note:focus { border-color: #333; }
+.note::placeholder { color: #3a3a3a; }
+
+nav { border-top: 0.5px solid var(--line); }
+.tab { font-size: 10px; letter-spacing: 0; }
+.res-stat-num { font-weight: 600; }
+.res-stat-label { font-size: 11px; color: var(--sub); }
 </style>
 </head>
 <body>
@@ -879,76 +953,56 @@ body.wo-active { overflow:hidden; position:fixed; width:100%; }
 <div class="view active" id="v-habits">
 <div class="content">
 
-  <div class="scores-wrap">
-    <div class="score-block">
-      <div class="score-ring" id="ring-deen" style="--rc:#d97706">
-        <span class="score-ring-val" id="scoreAlign">0%</span>
-      </div>
-      <div class="score-label">Deen</div>
-    </div>
-    <div class="score-block">
-      <div class="score-ring" id="ring-dounia" style="--rc:#22c55e">
-        <span class="score-ring-val" id="scoreDeen">0%</span>
-      </div>
-      <div class="score-label">Dounia</div>
-    </div>
-    <div class="score-block">
-      <div class="score-ring" id="ring-eng" style="--rc:#3b82f6">
-        <span class="score-ring-val" id="scoreDounia">0%</span>
-      </div>
-      <div class="score-label">English</div>
-    </div>
+  <div class="hero">
+    <div class="hero-num"><span id="globalScore">0</span><span class="hero-pct">%</span></div>
+    <div class="hero-sub">Deen <span id="scoreAlign">0%</span> · Dounia <span id="scoreDeen">0%</span> · Anglais <span id="scoreDounia">0%</span></div>
+    <div class="hero-bar"><div id="globalBar"></div></div>
   </div>
 
-  <div class="global-score-wrap">
-    <div class="global-score-bar-bg">
-      <div class="global-score-bar" id="globalBar"></div>
-    </div>
-    <div class="global-score-label">
-      <span style="color:var(--muted);font-size:11px;letter-spacing:.06em">GLOBAL</span>
-      <span id="globalScore" style="font-size:18px;font-weight:700;color:var(--text)">0%</span>
-    </div>
-  </div>
-
-  <div class="section" id="sectionDaily">Daily habits</div>
+  <div class="section" id="sectionDaily">Habitudes</div>
   <div id="hlist"></div>
 
   <div id="var-section" style="display:none">
-    <div class="section">Today</div>
+    <div class="section">Aujourd'hui</div>
     <div id="vlist"></div>
   </div>
 
-  <div class="rt s-deen-rt" id="deentoggle" onclick="toggleDeen()">
+  <div class="section">Sections</div>
+  <div class="rt" id="deentoggle" onclick="toggleDeen()">
     <span>Deen</span>
-    <span class="rt-arrow">▶</span>
+    <span class="rt-right"><span class="rt-pct" id="deenRowPct"></span><span class="rt-arrow">›</span></span>
   </div>
-  <div class="rbody" id="deenbody">
+  <div class="rt" id="engtoggle" onclick="toggleEng()">
+    <span>Anglais</span>
+    <span class="rt-right"><span class="rt-pct" id="engRowPct"></span><span class="rt-arrow">›</span></span>
+  </div>
+  <div class="rt" id="sporttoggle" onclick="toggleSport()">
+    <span>Bonus</span>
+    <span class="rt-right"><span class="rt-arrow">›</span></span>
+  </div>
+
+  <div class="rbody sheet" id="deenbody">
+    <div class="sheet-head"><button class="sheet-back" onclick="toggleDeen()" aria-label="Retour">‹</button><span>Deen</span></div>
     <div id="dlist"></div>
     <div class="rt" id="rt" onclick="toggleR()">
       <span>Rawātib</span>
-      <span class="rt-arrow">▶</span>
+      <span class="rt-arrow">›</span>
     </div>
     <div class="rbody" id="rbody">
       <div id="rlist"></div>
     </div>
   </div>
 
-  <div class="rt s-eng-rt" id="engtoggle" onclick="toggleEng()">
-    <span>English</span>
-    <span class="rt-arrow">▶</span>
-  </div>
-  <div class="rbody" id="engbody">
+  <div class="rbody sheet" id="engbody">
+    <div class="sheet-head"><button class="sheet-back" onclick="toggleEng()" aria-label="Retour">‹</button><span>Anglais</span></div>
     <div id="elist"></div>
     <div id="english-day-banner" style="display:none;margin:8px 0 4px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);font-size:12px;color:rgba(59,130,246,0.9);font-weight:600;text-align:center">⭐ English Day</div>
   </div>
 
-  <div class="rt" id="sporttoggle" onclick="toggleSport()">
-    <span>Bonus</span>
-    <span class="rt-arrow">▶</span>
-  </div>
-  <div class="rbody" id="sportbody">
+  <div class="rbody sheet" id="sportbody">
+    <div class="sheet-head"><button class="sheet-back" onclick="toggleSport()" aria-label="Retour">‹</button><span>Bonus</span></div>
     <div id="sportlist"></div>
-    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Training — 90 days</div>
+    <div style="margin-top:10px;margin-bottom:4px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em">Entraînements — 90 jours</div>
     <div class="heatmap-wrap"><div class="heatmap-grid" id="sportgrid"></div></div>
     <div class="heatmap-legend" style="margin-bottom:8px">
       <div class="hm-cell" style="background:rgba(34,197,94,0.85)"></div><span style="font-size:10px;color:var(--muted)">BJJ</span>
@@ -964,32 +1018,37 @@ body.wo-active { overflow:hidden; position:fixed; width:100%; }
     </div>
   </div>
 
-  <div class="section">Daily note</div>
+  <div class="section">Note du jour</div>
   <div class="note-wrap">
-    <textarea class="note" id="noteEl" placeholder="Free note…" oninput="saveNote()"></textarea>
+    <textarea class="note" id="noteEl" placeholder="Une pensée, un ressenti…" oninput="saveNote()"></textarea>
   </div>
 
+</div>
+</div>
+
+<!-- ═══════════ PROGRÈS ═══════════ -->
+<div class="view" id="v-progress">
+<div class="content">
   <div class="res-summary">
     <div class="res-stat">
       <div class="res-stat-num" id="resStreak">—</div>
-      <div class="res-stat-label">Streak ≥50%</div>
+      <div class="res-stat-label">Série ≥ 50%</div>
     </div>
     <div class="res-stat">
       <div class="res-stat-num" id="resAvg">—</div>
-      <div class="res-stat-label">90-day avg</div>
+      <div class="res-stat-label">Moyenne 90 j</div>
     </div>
     <div class="res-stat">
       <div class="res-stat-num" id="resGoodDays">—</div>
-      <div class="res-stat-label">Good days (90d)</div>
+      <div class="res-stat-label">Bons jours (90 j)</div>
     </div>
   </div>
 
-  <div class="section">Resilience — last 12 weeks</div>
+  <div class="section">Résilience — 12 semaines</div>
   <div class="res-day-names">
-    <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+    <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
   </div>
-  <div id="resGrid"><div class="res-loading">Loading…</div></div>
-
+  <div id="resGrid"><div class="res-loading">Chargement…</div></div>
 </div>
 </div>
 
@@ -997,7 +1056,11 @@ body.wo-active { overflow:hidden; position:fixed; width:100%; }
 <nav>
   <button class="tab active" id="tab-habits" onclick="showView('habits')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    Habits
+    Aujourd'hui
+  </button>
+  <button class="tab" id="tab-progress" onclick="showView('progress')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Progrès
   </button>
 </nav>
 
@@ -1385,7 +1448,7 @@ function renderResilience(){
     const firstDay = week[0];
     const mon = firstDay.getMonth();
     const weekLabel = mon !== prevMonth
-      ? firstDay.toLocaleDateString('en',{month:'short'})
+      ? firstDay.toLocaleDateString('fr-FR',{month:'short'})
       : '';
     prevMonth = mon;
 
@@ -1435,9 +1498,9 @@ function renderResilience(){
 
   // Legend
   const legend = `<div class="res-legend">
-    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.55)"></div>Good ≥50%</div>
-    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.9)"></div>Great ≥80%</div>
-    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(239,68,68,0.35)"></div>Bad &lt;50%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.55)"></div>Bon ≥ 50%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(34,197,94,0.9)"></div>Très bon ≥ 80%</div>
+    <div class="res-legend-item"><div class="res-legend-dot" style="background:rgba(239,68,68,0.35)"></div>Faible &lt; 50%</div>
     <div class="res-legend-item"><div class="res-legend-dot" style="box-shadow:inset 0 0 0 2px rgba(239,68,68,0.85);background:transparent"></div>Al-ʿAhd ⚠</div>
   </div>`;
 
@@ -1572,7 +1635,9 @@ function renderXP() {
   if(isSickDay() || isDayOff()){
     elA.textContent='—'; elA.style.color='var(--muted)';
     elD.textContent='—'; elD.style.color='var(--muted)';
-    elQ.textContent=isDayOff()?'☀️':'—'; elQ.style.color='var(--muted)';
+    elQ.textContent='—'; elQ.style.color='var(--muted)';
+    const gEl0=document.getElementById('globalScore'); if(gEl0) gEl0.textContent=isDayOff()?'Off':'—';
+    const gB0=document.getElementById('globalBar'); if(gB0) gB0.style.width='0%';
     return;
   }
 
@@ -1582,39 +1647,40 @@ function renderXP() {
   const engXp = xpEnglish();
   const engPct = Math.min(Math.round(engXp/xpEnglishMax()*100), 100);
 
-  elA.textContent = deenPct+'%'; elA.style.color = color(deenPct);
-  elD.textContent = dounia+'%';  elD.style.color = color(dounia);
-  elQ.textContent = engPct+'%';  elQ.style.color = color(engPct);
+  const pos = n => Math.max(0, n);
+  elA.textContent = pos(deenPct)+'%'; elA.style.color = '';
+  elD.textContent = pos(dounia)+'%';  elD.style.color = '';
+  elQ.textContent = pos(engPct)+'%';  elQ.style.color = '';
+  const dR = document.getElementById('deenRowPct'), eR = document.getElementById('engRowPct');
+  if(dR) dR.textContent = pos(deenPct)+'%';
+  if(eR) eR.textContent = pos(engPct)+'%';
 
-  // Update rings
-  const setRing = (id, pct) => {
-    const el = document.getElementById(id);
-    if(el) el.style.setProperty('--pct', pct);
-  };
-  setRing('ring-deen', deenPct);
-  setRing('ring-dounia', dounia);
-  setRing('ring-eng', engPct);
-
-  // Global weighted score: Deen 40% · Dounia 40% · English 20%
-  const global = Math.round(deenPct * 0.25 + dounia * 0.65 + engPct * 0.10);
+  // Global weighted score: Deen 25% · Dounia 65% · English 10% — never shown below 0
+  const global = pos(Math.round(deenPct * 0.25 + dounia * 0.65 + engPct * 0.10));
   const gEl = document.getElementById('globalScore');
   const gBar = document.getElementById('globalBar');
-  if(gEl){ gEl.textContent = global+'%'; gEl.style.color = color(global); }
+  if(gEl){ gEl.textContent = global; gEl.style.color = ''; }
   if(gBar) gBar.style.width = global+'%';
 
   const edBanner = document.getElementById('english-day-banner');
   if(edBanner) edBanner.style.display = engXp >= ENGLISH_DAY ? 'block' : 'none';
 }
 
+// Display-only French labels (saved names in DAILY files stay unchanged)
+const LABELS_FR = { scapula:'Scapula', supplements:'Suppléments', steps_12k:'Pas', dopamine_detox:'Détox écrans',
+  wake_6h:'Réveil 6h', quran_15min:'Coran', no_music:'Pas de musique', var_arabe:'Cours d\'arabe', var_screens_isha:'Écrans off à ʿIshāʾ' };
+function hLabel(h){ return LABELS_FR[h.id] || h.name; }
+
 function habitRow(h) {
   if(h.slider){
     const v = hs[h.id]||0;
     const isSteps = h.sliderStep >= 100;
     const pctDisplay = h.sliderGoal ? Math.round(Math.min(v/h.sliderGoal,1)*100+(v>h.sliderGoal?Math.max(0,(v-h.sliderGoal)/(h.sliderMax-h.sliderGoal))*50:0)) : Math.round(v/h.sliderMax*100);
-    const label = v===0 ? '—' : isSteps ? (v>=1000?(v/1000).toFixed(1)+'k':v)+' steps · '+pctDisplay+'%' : v+'min · '+pctDisplay+'%';
+    const fmtMin = m => m>=60 ? Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'') : m+' min';
+    const label = v===0 ? '—' : isSteps ? v.toLocaleString('fr-FR')+' pas · '+pctDisplay+'%' : fmtMin(v)+' · '+pctDisplay+'%';
     return `<div class="slider-row">
       <div class="slider-row-top">
-        <span class="slider-name">${h.name}</span>
+        <span class="slider-name">${hLabel(h)}</span>
         <span class="slider-val ${v===0?'zero':''}">${label}</span>
       </div>
       <input type="range" class="habit-slider" min="0" max="${h.sliderMax}" step="${h.sliderStep||5}" value="${v}"
@@ -1631,7 +1697,7 @@ function habitRow(h) {
     const tag=isGood?'<span style="font-size:10px;color:var(--green);font-weight:600;flex-shrink:0">1 ep</span>':isBinge?'<span style="font-size:10px;color:#ef4444;font-weight:600;flex-shrink:0">BINGE</span>':'';
     return `<div class="row" onclick="tH('${h.id}')" style="align-items:center">
       <div class="circle" style="${circleStyle}">${label}</div>
-      <div class="ri"><div class="rn" style="${nameStyle}">${h.name}</div><div class="rd">${h.desc}</div></div>
+      <div class="ri"><div class="rn" style="${nameStyle}">${hLabel(h)}</div><div class="rd">${h.desc}</div></div>
       ${tag}
     </div>`;
   }
@@ -1642,7 +1708,7 @@ function habitRow(h) {
     const dots=`<div class="dots-wrap">${Array.from({length:h.max},(_,i)=>`<div class="d ${i<c?'on':''}"></div>`).join('')}</div>`;
     return `<div class="drow ${cls}" onclick="tH('${h.id}')">
       <div class="dcircle">${lbl}</div>
-      <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+      <div class="ri"><div class="rn">${hLabel(h)}</div><div class="rd">${h.desc}</div></div>
       ${dots}
     </div>`;
   }
@@ -1654,15 +1720,15 @@ function habitRow(h) {
     const diff=hs['dopamine_diff'];
     const diffTag=done&&diff?`<span style="font-size:10px;color:#ef4444;font-weight:700;flex-shrink:0">${diff}/10</span>`:'';
     const dayTag='';
-    return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')" style="${done?'border-left-color:#ef4444':'border-left-color:#ef4444;opacity:0.7'}">
-      <div class="circle" style="${done?'background:#ef4444;border-color:#ef4444':''}">${done?CHECK_SVG:''}</div>
-      <div class="ri"><div class="rn" style="color:${done?'var(--muted)':'#ef4444'}">${h.name}</div><div class="rd">${h.desc}</div></div>
+    return `<div class="row ${done?'done':''}" onclick="tH('${h.id}')">
+      <div class="circle">${done?CHECK_SVG:''}</div>
+      <div class="ri"><div class="rn">${hLabel(h)}</div><div class="rd">${h.desc}</div></div>
       ${dayTag}${diffTag}
     </div>`;
   }
   return `<div class="row ${done?'done':''} ${punitiveOpen?'punitive-open':''}" onclick="tH('${h.id}')">
     <div class="circle">${done?CHECK_SVG:''}</div>
-    <div class="ri"><div class="rn">${h.name}</div><div class="rd">${h.desc}</div></div>
+    <div class="ri"><div class="rn">${hLabel(h)}</div><div class="rd">${h.desc}</div></div>
     ${infoBtn}
   </div>`;
 }
@@ -2066,7 +2132,7 @@ let voyageMode = localStorage.getItem('voyage_mode') === '1';
 function applyVoyageUI(){
   document.getElementById('voyBanner').classList.toggle('active', voyageMode);
   document.getElementById('voyageBtn').classList.toggle('active', voyageMode);
-  document.getElementById('sectionDaily').textContent = voyageMode ? '✈️ Travel mode' : 'Daily habits';
+  document.getElementById('sectionDaily').textContent = voyageMode ? 'Mode voyage' : 'Habitudes';
 }
 
 function scoreJourVoyage(){
@@ -2117,31 +2183,24 @@ function toggleR(){
   t.classList.toggle('open',open);
 }
 
-function toggleSport(){
-  const b=document.getElementById('sportbody'),t=document.getElementById('sporttoggle');
-  const open=b.classList.toggle('open');
-  t.classList.toggle('open',open);
-  try{localStorage.setItem('sec_sport',open?'1':'0');}catch(e){}
+// Deen / Anglais / Bonus open as full-screen sheets; phone "back" closes them
+function toggleSheet(bid){
+  const b=document.getElementById(bid);
+  const open=!b.classList.contains('open');
+  document.querySelectorAll('.sheet.open').forEach(s=>s.classList.remove('open'));
+  if(open){
+    b.classList.add('open'); b.scrollTop=0;
+    try{history.pushState({sheet:bid},'');}catch(e){}
+  } else if(history.state && history.state.sheet){
+    try{history.back();}catch(e){}
+  }
 }
-function toggleDeen(){
-  const b=document.getElementById('deenbody'),t=document.getElementById('deentoggle');
-  const open=b.classList.toggle('open');
-  t.classList.toggle('open',open);
-  try{localStorage.setItem('sec_deen',open?'1':'0');}catch(e){}
-}
-function toggleEng(){
-  const b=document.getElementById('engbody'),t=document.getElementById('engtoggle');
-  const open=b.classList.toggle('open');
-  t.classList.toggle('open',open);
-  try{localStorage.setItem('sec_eng',open?'1':'0');}catch(e){}
-}
+window.addEventListener('popstate',()=>{document.querySelectorAll('.sheet.open').forEach(s=>s.classList.remove('open'));});
+function toggleSport(){ toggleSheet('sportbody'); }
+function toggleDeen(){ toggleSheet('deenbody'); }
+function toggleEng(){ toggleSheet('engbody'); }
 function restoreSections(){
-  [['sec_deen','deenbody','deentoggle'],['sec_eng','engbody','engtoggle'],['sec_sport','sportbody','sporttoggle']].forEach(([key,bid,tid])=>{
-    const saved = localStorage.getItem(key);
-    const shouldOpen = saved === '1'; // default closed for all
-    document.getElementById(bid).classList.toggle('open', shouldOpen);
-    document.getElementById(tid).classList.toggle('open', shouldOpen);
-  });
+  document.querySelectorAll('.sheet.open').forEach(s=>s.classList.remove('open'));
 }
 
 function tB(id){
