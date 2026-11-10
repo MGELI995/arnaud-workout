@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0c0c0c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -896,6 +896,56 @@ nav { border-top: 0.5px solid var(--line); }
 .tab { font-size: 10px; letter-spacing: 0; }
 .res-stat-num { font-weight: 600; }
 .res-stat-label { font-size: 11px; color: var(--sub); }
+
+/* Slider: filled track up to the thumb */
+.habit-slider { background: linear-gradient(to right, var(--green) var(--p,0%), var(--line) var(--p,0%)); }
+
+/* ── PHONE (Pixel 10a ≈ 412 px) : bigger touch targets, gesture-bar safe area ── */
+@media (pointer: coarse) {
+  .habit-slider { height: 32px; padding: 14px 0; background-clip: content-box; background-origin: content-box; }
+  .habit-slider::-webkit-slider-thumb { width: 28px; height: 28px; }
+  .habit-slider::-moz-range-thumb { width: 28px; height: 28px; }
+  .circle, .dcircle { width: 28px; height: 28px; }
+  .row, .drow, .rt { min-height: 58px; }
+  .sheet-back { padding: 6px 14px 8px 0; }
+  .info-btn { width: 36px; height: 36px; }
+}
+nav { padding-bottom: env(safe-area-inset-bottom); height: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+header { padding-top: env(safe-area-inset-top); }
+
+/* ── COMPUTER (Dell XPS 13 9315 ≈ 1280 px) : two columns, Today | Progress ── */
+@media (min-width: 960px) {
+  body { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 520px); justify-content: center; column-gap: 72px;
+    grid-template-rows: auto auto auto auto auto 1fr; }
+  header { grid-column: 1 / -1; grid-row: 1; padding: 0; height: 64px; }
+  #voyBanner { grid-column: 1 / -1; grid-row: 2; }
+  #sickBanner { grid-column: 1 / -1; grid-row: 3; }
+  #dayoffBanner { grid-column: 1 / -1; grid-row: 4; }
+  .date-nav { grid-column: 1 / -1; grid-row: 5; padding: 0 0 8px; }
+  .view, .view.active { display: block; grid-row: 6; min-height: 0; }
+  #v-habits { grid-column: 1; }
+  #v-progress { grid-column: 2; }
+  .content { max-width: none; padding: 0 0 48px; }
+  #v-progress .content { padding-top: 34px; }
+  nav { display: none; }
+  .hero-num { font-size: 80px; }
+  .row:hover, .drow:hover, .rt:hover { background: rgba(255,255,255,0.025) !important; }
+  .slider-row:hover .habit-slider::-webkit-slider-thumb { transform: scale(1.1); }
+  .view, .sheet { scrollbar-width: none; }
+  .view::-webkit-scrollbar, .sheet::-webkit-scrollbar { display: none; }
+  .date-nav { grid-column: 1; justify-content: flex-start; gap: 14px; }
+  .date-nav .dnav-label { min-width: 0; text-align: left; font-size: 15px; }
+  .res-day-cell { height: 30px; }
+  /* Deen / Anglais / Bonus: side drawer instead of full screen */
+  .sheet { left: auto; width: 480px; border-left: 0.5px solid var(--line); box-shadow: -24px 0 60px rgba(0,0,0,0.55); padding: 0 32px 48px; }
+  /* Full-screen overlays: keep content in a readable centered column */
+  .wo-overlay { align-items: center; }
+  .wo-overlay > * { width: 100%; max-width: 620px; }
+  .overlay .ov-header, .overlay .ov-body { width: 100%; max-width: 620px; margin-left: auto; margin-right: auto; }
+  .mc-modal { align-items: center; justify-content: center; }
+  .mc-sheet { max-width: 480px; border-radius: 18px; }
+  .toast { bottom: 28px; }
+}
 </style>
 </head>
 <body>
@@ -1671,20 +1721,23 @@ const LABELS_FR = { scapula:'Scapula', supplements:'Suppléments', steps_12k:'Pa
   wake_6h:'Réveil 6h', quran_15min:'Coran', no_music:'Pas de musique', var_arabe:'Cours d\'arabe', var_screens_isha:'Écrans off à ʿIshāʾ' };
 function hLabel(h){ return LABELS_FR[h.id] || h.name; }
 
+function sliderLabel(h, v){
+  if(!v) return '—';
+  const pct = h.sliderGoal ? Math.round(Math.min(v/h.sliderGoal,1)*100+(v>h.sliderGoal?Math.max(0,(v-h.sliderGoal)/(h.sliderMax-h.sliderGoal))*50:0)) : Math.round(v/h.sliderMax*100);
+  const fmtMin = m => m>=60 ? Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'') : m+' min';
+  return (h.sliderStep>=100 ? v.toLocaleString('fr-FR')+' pas' : fmtMin(v))+' · '+pct+'%';
+}
+
 function habitRow(h) {
   if(h.slider){
     const v = hs[h.id]||0;
-    const isSteps = h.sliderStep >= 100;
-    const pctDisplay = h.sliderGoal ? Math.round(Math.min(v/h.sliderGoal,1)*100+(v>h.sliderGoal?Math.max(0,(v-h.sliderGoal)/(h.sliderMax-h.sliderGoal))*50:0)) : Math.round(v/h.sliderMax*100);
-    const fmtMin = m => m>=60 ? Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'') : m+' min';
-    const label = v===0 ? '—' : isSteps ? v.toLocaleString('fr-FR')+' pas · '+pctDisplay+'%' : fmtMin(v)+' · '+pctDisplay+'%';
     return `<div class="slider-row">
       <div class="slider-row-top">
         <span class="slider-name">${hLabel(h)}</span>
-        <span class="slider-val ${v===0?'zero':''}">${label}</span>
+        <span class="slider-val ${v===0?'zero':''}" id="sv-${h.id}">${sliderLabel(h,v)}</span>
       </div>
-      <input type="range" class="habit-slider" min="0" max="${h.sliderMax}" step="${h.sliderStep||5}" value="${v}"
-        oninput="setSlider('${h.id}',+this.value)" ontouchend="pushHabits()" onmouseup="pushHabits()">
+      <input type="range" class="habit-slider" min="0" max="${h.sliderMax}" step="${h.sliderStep||5}" value="${v}" style="--p:${Math.round(v/h.sliderMax*100)}%"
+        oninput="setSlider('${h.id}',+this.value,this)" onchange="renderHabits();pushHabits()">
       <div class="slider-desc">${h.desc}</div>
     </div>`;
   }
@@ -1936,10 +1989,15 @@ function renderRawatib() {
     </div>`).join('');
 }
 
-function setSlider(id, val){
+// Update in place while dragging (no re-render → the thumb never jumps); full render on release
+function setSlider(id, val, el){
   hs[id]=val;
   saveHL();
-  renderHabits();
+  const h = activeHabits(HABITS).find(x=>x.id===id) || HABITS.find(x=>x.id===id);
+  const lab = document.getElementById('sv-'+id);
+  if(h && lab){ lab.textContent = sliderLabel(h,val); lab.classList.toggle('zero', !val); }
+  if(h && el) el.style.setProperty('--p', Math.round(val/h.sliderMax*100)+'%');
+  if(!el) renderHabits();
   renderXP();
 }
 
